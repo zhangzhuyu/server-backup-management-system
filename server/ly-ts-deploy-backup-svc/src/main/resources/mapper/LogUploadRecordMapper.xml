@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.LogUploadRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ly.cloud.backup.po.LogUploadRecordPo">
+        <id column="id" property="id" />
+        <result column="md5" property="md5" />
+        <result column="file_name" property="fileName" />
+        <result column="chunk_num" property="chunkNum" />
+        <result column="chunk_sum" property="chunkSum" />
+        <result column="service_id" property="serviceId" />
+        <result column="remark" property="remark" />
+        <result column="type" property="type" />
+        <result column="file_size" property="fileSize" />
+        <result column="operation_time" property="operationTime" />
+        <result column="upload_status" property="uploadStatus" />
+        <result column="analyse_status" property="analyseStatus" />
+        <result column="chunk_md5" property="chunkMd5" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+		md5,
+		file_name,
+		chunk_num,
+		chunk_sum,
+		service_id,
+		remark,
+		type,
+		file_size,
+        operation_time,
+        upload_status,
+        analyse_status,
+        chunk_md5
+    </sql>
+
+    <select id="select" resultMap="BaseResultMap" parameterType="String">
+        select
+        <include refid="Base_Column_List" />
+        from ly_log_upload_record ur
+        <where>
+            ur.type = 1
+            <if test="content != null and content != '' ">
+                and ur.file_name like concat('%', #{content}, '%')
+            </if>
+        </where>
+    </select>
+</mapper>

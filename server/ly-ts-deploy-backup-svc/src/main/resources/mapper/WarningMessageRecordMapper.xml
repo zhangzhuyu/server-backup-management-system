@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.WarningMessageRecordMapper">
+
+    <!--  条件查询告警规则信息  -->
+    <select id="list" resultType="com.ly.cloud.backup.vo.WarningPushRecordVo">
+        select
+        lmwmr.id id,
+        lmwmr.message_type messageType,
+        lmwmr.message_time messageTime,
+        lmwmr.message_status messageStatus,
+        lmwmr.recipients_id recipientsId,
+        lmwmr.remark remark,
+        lmwr2.name title,
+        lmwr2.name `name`,
+        lmwr.rule_id ruleId,
+        lmwsm.enable_content
+        from ly_mw_warning_message_record lmwmr
+        left join ly_mw_warning_message lmwm on lmwmr.id = lmwm.message_id
+        left join ly_mw_warning_record lmwr on lmwm.warning_id = lmwr.id
+        left join ly_mw_warning_rule lmwr2 on lmwr2.id = lmwr.rule_id
+        left join ly_mw_warning_subscription_method lmwsm on lmwsm.level_id = lmwr2.warning_level
+        <where>
+            <if test="dto.content != null and dto.content!= '' ">
+                and  lmwr2.name like concat('%', #{dto.content}, '%')
+            </if>
+            <if test="dto.messageTypeList != null and dto.messageTypeList.size() > 0">
+                and  lmwmr.message_type in
+                <foreach collection="dto.messageTypeList" open="(" separator="," item="message_type" close=")">
+                    #{message_type}
+                </foreach>
+            </if>
+            <if test="dto.messageStatusList != null and dto.messageStatusList.size() > 0">
+                and  lmwmr.message_status in
+                <foreach collection="dto.messageStatusList" open="(" separator="," item="message_status" close=")">
+                    #{message_status}
+                </foreach>
+            </if>
+            <if test="dto.ruleId != null and dto.ruleId!= '' ">
+                and  lmwr2.id = #{dto.ruleId}
+            </if>
+        </where>
+        <if test="dto.columnKey == null or dto.columnKey == '' ">
+            order by lmwmr.message_time desc
+        </if>
+        <if test="dto.columnKey != null and dto.columnKey != '' ">
+            <if test="dto.order != null and dto.order != '' and dto.order == 'ascend'">
+                order by lmwmr.${dto.columnKey} asc
+            </if>
+            <if test="dto.order != null and dto.order != '' and dto.order == 'descend'">
+                order by lmwmr.${dto.columnKey} desc
+            </if>
+            <if test="dto.order == null or dto.order == '' or (dto.order != 'descend' and dto.order != 'ascend')">
+                order by lmwmr.${dto.columnKey} desc
+            </if>
+        </if>
+    </select>
+
+    <select id="ruleList" resultType="com.ly.cloud.backup.vo.WarningPushRecordVo">
+        select
+            rule.id ruleId,
+            rule.name title,
+            rule.name `name`,
+            messageRecord.message_type messageType,
+            messageRecord.message_status messageStatus,
+            lymwsm.enable_content enableContent,
+            count(*) total
+        from ly_mw_warning_rule rule
+        left join ly_mw_warning_record record on rule.id = record.rule_id
+        left join ly_mw_warning_message message on record.id = message.warning_id
+        left join ly_mw_warning_message_record messageRecord on message.message_id = messageRecord.id
+        left join ly_mw_warning_subscription_method lymwsm on lymwsm.level_id = rule.warning_level
+        <where>
+            <if test="searchKey != null and searchKey != '' ">
+                and  rule.name like concat('%', #{searchKey}, '%')
+            </if>
+            <if test="ruleId != null and ruleId != '' ">
+                and  rule.id = #{ruleId}
+            </if>
+        </where>
+        group by ruleId,title,name,message_type,messageStatus,enableContent
+        order by rule.operation_time desc
+    </select>
+
+    <delete id="deleteRecordByRuleId">
+        delete from ly_mw_warning_message_record where id in (
+        select message_id from ly_mw_warning_message lmwm
+        where lmwm.warning_id in (
+        select id from ly_mw_warning_record
+        <where>
+            <if test="ruleIds != null and ruleIds.size() > 0">
+                and rule_id in
+                <foreach collection="ruleIds" open="(" separator="," item="ruleId" close=")">
+                    #{ruleId}
+                </foreach>
+            </if>
+        </where>))
+    </delete>
+</mapper>

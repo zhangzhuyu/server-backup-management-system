@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.ReportSubscriptionMapper">
+
+    <resultMap id="BaseResultMap" type="com.ly.cloud.backup.po.ReportSubscriptionPo">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="subscriptionTitle" column="subscription_title" jdbcType="VARCHAR"/>
+        <result property="subscriptionType" column="subscription_type" jdbcType="VARCHAR"/>
+        <result property="enable" column="enable" jdbcType="VARCHAR"/>
+        <result property="operatorId" column="operator_id" jdbcType="VARCHAR"/>
+        <result property="operationTime" column="operation_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+        subscription_title,
+        subscription_type,
+        enable,
+        operator_id,
+        operation_time
+    </sql>
+
+    <resultMap id="ReportSubscriptionMap"
+               type="com.ly.cloud.backup.vo.ReportSubscriptionVo" extends="BaseResultMap">
+
+    </resultMap>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="ReportSubscriptionMap"
+            parameterType="com.ly.cloud.backup.dto.ReportSubscriptionDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_or_report_subscription
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.subscriptionTitle != null and dto.subscriptionTitle != '' ">
+                and  subscription_title = #{dto.subscriptionTitle,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.subscriptionType != null and dto.subscriptionType != '' ">
+                and  subscription_type = #{dto.subscriptionType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.enable != null and dto.enable != '' ">
+                and  enable = #{dto.enable,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  operator_id = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  operation_time = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and  subscription_title like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.subscriptionTypeList != null ">
+                and subscription_type in
+                <foreach collection="dto.subscriptionTypeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

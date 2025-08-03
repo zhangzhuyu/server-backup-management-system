@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.CompanyMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.CompanyPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="parent_node" property="parentNode" jdbcType="BIGINT" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		parent_node,
+		serial_number,
+		operator_id,
+		operation_time,
+		remark
+    </sql>
+    
+    <resultMap id="CompanyMap"
+               type="com.ly.cloud.backup.vo.CompanyVo" extends="BaseResultMap">
+        
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="CompanyMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sm_company
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="CompanyMap"
+            parameterType="com.ly.cloud.backup.dto.CompanyDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sm_company
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.name != null and dto.name != '' ">
+                and  NAME = #{dto.name,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.parentNode != null and dto.parentNode != '' ">
+                and  PARENT_NODE = #{dto.parentNode,jdbcType=BIGINT}
+            </if>
+            <if test="dto.serialNumber != null and dto.serialNumber != '' ">
+                and  SERIAL_NUMBER = #{dto.serialNumber,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <resultMap id="companyTreeAll" type="com.ly.cloud.backup.vo.CompanyVo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="parent_node" property="parentNode" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="content" property="content" jdbcType="VARCHAR" />
+        <result column="companyShow" property="companyShow" jdbcType="VARCHAR" />
+        <result column="buttonType" property="buttonType" jdbcType="INTEGER" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+        <collection column="{id=id,buttonType=buttonType,content=content}" property="children" select="getTreeById" />
+    </resultMap>
+
+    <select id="queryTreeCompanyAll" resultMap="companyTreeAll">
+        select id,parent_node,name,serial_number,0 buttonType ,'${content}' as content  from ly_sm_company where parent_node is null order by serial_number+0
+    </select>
+
+    <select id="getTreeById" resultMap="companyTreeAll">
+        select
+            id,
+            parent_node,
+            name,
+            serial_number,
+            1 as companyShow,
+            '${buttonType}'+1 buttonType,
+            '${content}' as content
+        from ly_sm_company
+        where
+            parent_node=#{id,jdbcType=BIGINT}
+            <if test="content != null and content != '' ">
+                and  name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        order by
+            serial_number+0
+    </select>
+
+
+    <resultMap id="companyTreeToServer" type="com.ly.cloud.backup.vo.CompanyVo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="switchChecked" property="switchChecked" jdbcType="INTEGER" />
+        <result column="ngnixShow" property="ngnixShow" jdbcType="INTEGER" />
+        <result column="serverShow" property="serverShow" jdbcType="INTEGER" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+        <result column="firewall_state" property="firewallState" jdbcType="VARCHAR" />
+    </resultMap>
+    <select id="queryTreeCompanyToServer" resultMap="companyTreeToServer">
+        select
+            id,
+            IPV4 as name,
+            serial_number,
+            firewall_state,
+            '${buttonType}' as buttonType,
+            1 as serverShow
+        from ly_rm_server
+        where
+            affiliated_company=#{affiliatedCompany,jdbcType=BIGINT}
+            <if test="content != null and content != '' ">
+                and  IPV4 like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        order by serial_number+0
+    </select>
+
+    <resultMap id="companyTreeToNginx" type="com.ly.cloud.backup.vo.CompanyVo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="switchChecked" property="switchChecked" jdbcType="INTEGER" />
+        <result column="ngnixShow" property="ngnixShow" jdbcType="INTEGER" />
+        <result column="serverShow" property="serverShow" jdbcType="INTEGER" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+        <result column="firewall_state" property="firewallState" jdbcType="VARCHAR" />
+        <collection column="{id=id,buttonType=buttonType,content=content}" property="children" select="getNginxTreeByServerId" />
+    </resultMap>
+    <select id="queryTreeCompanyToNginx" resultMap="companyTreeToNginx">
+        select
+            id,
+            IPV4 as name,
+            serial_number,
+            firewall_state,
+            1 as serverShow,
+            '${buttonType}' as buttonType,
+            '${content}' as content
+        from ly_rm_server
+        where
+            affiliated_company=#{affiliatedCompany,jdbcType=BIGINT}
+            <if test="content != null and content != '' ">
+                and  IPV4 like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        order by serial_number+0
+    </select>
+    <select id="getNginxTreeByServerId" resultMap="companyTreeToNginx">
+        select
+            id,
+            name,
+            1 as ngnixShow,
+            serial_number,
+            '${buttonType}'+1 as buttonType,
+            '${content}' as content
+        from ly_rm_nginx
+        where
+            server_id=#{id,jdbcType=BIGINT}
+            <if test="content != null and content != '' ">
+                and  name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        order by
+        serial_number+0
+    </select>
+
+
+    <select id="queryTreeCompanyToFirewall" resultMap="companyTreeToServer">
+        select
+        id,
+        IPV4 as name,
+        serial_number,
+        firewall_state,
+        '${buttonType}' as buttonType,
+        1 as switchChecked
+        from ly_rm_server
+        where
+        affiliated_company=#{affiliatedCompany,jdbcType=BIGINT}
+        <if test="content != null and content != '' ">
+            and  IPV4 like concat('%', #{content,jdbcType=VARCHAR}, '%')
+        </if>
+        order by serial_number+0
+    </select>
+
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.NetrafficMapper">
+
+    <!-- 以下写查询方法 -->
+    <!-- 条件查询流量监控列表数据 -->
+    <select id="selectPageLike" resultType="com.ly.cloud.backup.vo.NetrafficVo">
+
+    </select>
+    <!-- 查看详情 -->
+    <select id="detail" resultType="com.ly.cloud.backup.vo.NetrafficDetailVo">
+
+    </select>
+    <!-- 以下写插入方法 -->
+
+    <!-- 以下写更新方法 -->
+
+    <!-- 以下写删除方法 -->
+
+</mapper>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.ReportSetMapper">
+
+    <resultMap id="BaseResultMap" type="com.ly.cloud.backup.po.ReportSetPo">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="parameter1" column="parameter1" jdbcType="VARCHAR"/>
+            <result property="parameter2" column="parameter2" jdbcType="VARCHAR"/>
+            <result property="enable" column="enable" jdbcType="VARCHAR"/>
+            <result property="timeType" column="time_type" jdbcType="VARCHAR"/>
+            <result property="setType" column="set_type" jdbcType="VARCHAR"/>
+            <result property="operatorId" column="operator_id" jdbcType="VARCHAR"/>
+            <result property="operationTime" column="operation_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+        parameter1,
+        parameter2,
+        enable,
+        time_type,
+        set_type,
+        operator_id,
+        operation_time,
+        remark
+    </sql>
+
+    <resultMap id="ReportSetMap"
+               type="com.ly.cloud.backup.vo.ReportSetVo" extends="BaseResultMap">
+
+    </resultMap>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="ReportSetMap"
+            parameterType="com.ly.cloud.backup.dto.ReportSetDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_or_report_set rest
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  rest.ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+
+            <if test="dto.parameter1 != null and dto.parameter1 != '' ">
+                and  rest.parameter1 = #{dto.parameter1,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.parameter2 != null and dto.parameter2 != '' ">
+                and  rest.parameter2 = #{dto.parameter2,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.enable != null and dto.enable != '' ">
+                and  rest.enable = #{dto.enable,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.defaultTemplate != null and dto.defaultTemplate != '' ">
+                and  rest.default_template = #{dto.defaultTemplate,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.enable != null and dto.enable != '' ">
+                and  rest.enable = #{dto.enable,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.timeType != null and dto.timeType != '' ">
+                and  rest.time_type = #{dto.timeType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.setType != null and dto.setType != '' ">
+                and  rest.set_type = #{dto.setType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  rest.operator_id = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  rest.operation_time = #{dto.operationTime,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  rest.REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+        </where>
+        order by
+            rest.OPERATION_TIME desc,
+            rest.ID desc
+    </select>
+
+</mapper>

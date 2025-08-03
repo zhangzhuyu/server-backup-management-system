@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.LyDbBackupStrategyRecordMapper">
+  <!--<resultMap id="BaseResultMap" type="com.ly.cloud.backup.vo.LyDbBackupStrategyRecordVo">
+    &lt;!&ndash;@mbg.generated&ndash;&gt;
+    &lt;!&ndash;@Table ly_db_backup_strategy_record&ndash;&gt;
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="data_source_type" jdbcType="VARCHAR" property="dataSourceType" />
+    <result column="backup_way" jdbcType="VARCHAR" property="backupWay" />
+    <result column="backup_method" jdbcType="VARCHAR" property="backupMethod" />
+    <result column="backup_target" jdbcType="VARCHAR" property="backupTarget" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="task_mode" jdbcType="VARCHAR" property="taskMode" />
+    <result column="enable" jdbcType="VARCHAR" property="enable" />
+    <result column="backup_time" jdbcType="TIMESTAMP" property="backupTime" />
+    <result column="operator_id" jdbcType="VARCHAR" property="operatorId" />
+    <result column="operation_time" jdbcType="TIMESTAMP" property="operationTime" />
+    <result column="cron" jdbcType="VARCHAR" property="cron" />
+    <result column="databases" jdbcType="VARCHAR" property="databases" />
+    <result column="tables" jdbcType="VARCHAR" property="tables" />
+    <result column="login_url" jdbcType="VARCHAR" property="loginUrl" />
+    <result column="login_username" jdbcType="VARCHAR" property="loginUsername" />
+    <result column="login_password" jdbcType="VARCHAR" property="loginPassword" />
+    <result column="operating_cycle" jdbcType="VARCHAR" property="operatingCycle" />
+    <result column="operation_date" jdbcType="VARCHAR" property="operationDate" />
+    <result column="run_time" jdbcType="VARCHAR" property="runTime" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="taier_id" jdbcType="VARCHAR" property="taierId" />
+    <result column="expdb" jdbcType="VARCHAR" property="expdb" />
+    <result column="total_method" jdbcType="VARCHAR" property="totalMethod" />
+  </resultMap>-->
+
+  <update id="enableStrategyRecordById">
+    update ly_db_backup_strategy_record r inner join LY_QRTZ_TRIGGERS t on r.id = t.TRIGGER_NAME
+    set r.enable = #{status} , t.TRIGGER_STATE = #{param}
+    where id = #{id}
+  </update>
+
+<!--更改cron-->
+  <update id="updateStrategyRecordById">
+    update LY_QRTZ_CRON_TRIGGERS t
+    set t.CRON_EXPRESSION = #{param}
+    where t.TRIGGER_NAME = #{id}
+  </update>
+
+  <update id="changeStrategyRecordById">
+    update LY_QRTZ_TRIGGERS t
+    set t.TRIGGER_STATE = #{param}
+    where t.TRIGGER_NAME = #{id}
+  </update>
+
+  <update id="enableStrategyRecordById1">
+    update ly_db_backup_strategy_record r
+    set r.enable = #{status}
+    where id = #{id}
+  </update>
+
+  <update id="enableStrategyRecordById2">
+    update LY_QRTZ_TRIGGERS t set t.TRIGGER_STATE = #{param}
+    where TRIGGER_NAME = #{id}
+  </update>
+
+  <select id="selectStrategyRecordById" resultType="java.lang.String">
+    select TRIGGER_STATE from LY_QRTZ_TRIGGERS
+    where TRIGGER_NAME = #{id}
+  </select>
+
+</mapper>

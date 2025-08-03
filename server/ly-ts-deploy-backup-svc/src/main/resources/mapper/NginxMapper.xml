@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.NginxMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.NginxPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="url" property="url" jdbcType="VARCHAR" />
+        <result column="server_id" property="serverId" jdbcType="VARCHAR" />
+        <result column="deployment_way" property="deploymentWay" jdbcType="VARCHAR" />
+        <result column="deployment_path" property="deploymentPath" jdbcType="VARCHAR" />
+        <result column="health_status" property="healthStatus" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		url,
+		server_id,
+		deployment_way,
+		deployment_path,
+		health_status,
+		operation_time,
+		operator_id,
+		remark,
+		serial_number
+    </sql>
+
+    <resultMap id="NginxMap"
+               type="com.ly.cloud.backup.vo.NginxVo" extends="BaseResultMap">
+        <result column="ipv4" property="ipv4" jdbcType="VARCHAR" />
+        <result column="port" property="port" jdbcType="VARCHAR" />
+        <result column="user" property="user" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="hostname" property="hostname" jdbcType="VARCHAR" />
+
+    </resultMap>
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="NginxMap"
+        parameterType="com.ly.cloud.backup.dto.NginxDto">
+        select
+            nginx.*,
+            server.ipv4,
+            server.port,
+            server.user,
+            server.password,
+            server.hostname
+        from ly_rm_nginx nginx
+        left join ly_rm_server server on server.id=nginx.server_id
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  nginx.ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.name != null and dto.name != '' ">
+          and  nginx.NAME = #{dto.name,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.url != null and dto.url != '' ">
+          and  nginx.URL = #{dto.url,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.serverId != null and dto.serverId != '' ">
+          and  nginx.SERVER_ID = #{dto.serverId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.deploymentWay != null and dto.deploymentWay != '' ">
+          and  nginx.DEPLOYMENT_WAY = #{dto.deploymentWay,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.deploymentPath != null and dto.deploymentPath != '' ">
+          and  nginx.DEPLOYMENT_PATH = #{dto.deploymentPath,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.healthStatus != null and dto.healthStatus != '' ">
+          and  nginx.health_status = #{dto.healthStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operationTime != null and dto.operationTime != '' ">
+          and  nginx.OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+        </if>
+        <if test="dto.operatorId != null and dto.operatorId != '' ">
+          and  nginx.OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  nginx.REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.serialNumber != null and dto.serialNumber != '' ">
+          and  nginx.serial_number = #{dto.serialNumber,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.content != null and dto.content != '' ">
+          and nginx.NAME like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+        </if>
+        </where>
+    </select>
+
+    <!-- 查询 -->
+    <select id="selecAllById" resultMap="NginxMap"
+            parameterType="com.ly.cloud.backup.dto.NginxDto">
+        select
+        nginx.*,
+        server.id server_id,
+        server.ipv4,
+        server.port,
+        server.user,
+        server.password,
+        server.hostname
+        from ly_rm_nginx nginx
+        left join ly_rm_server server on server.id=nginx.server_id
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  nginx.ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.name != null and dto.name != '' ">
+                and  nginx.NAME = #{dto.name,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.url != null and dto.url != '' ">
+                and  nginx.URL = #{dto.url,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.serverId != null and dto.serverId != '' ">
+                and  nginx.SERVER_ID = #{dto.serverId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.deploymentWay != null and dto.deploymentWay != '' ">
+                and  nginx.DEPLOYMENT_WAY = #{dto.deploymentWay,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.deploymentPath != null and dto.deploymentPath != '' ">
+                and  nginx.DEPLOYMENT_PATH = #{dto.deploymentPath,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.healthStatus != null and dto.healthStatus != '' ">
+                and  nginx.health_status = #{dto.healthStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  nginx.OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  nginx.OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  nginx.REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.serialNumber != null and dto.serialNumber != '' ">
+                and  nginx.serial_number = #{dto.serialNumber,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and nginx.NAME like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询所有数据 -->
+    <select id="getAllData" resultType="com.ly.cloud.backup.vo.NginxVo">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_nginx
+        where server_id is not null and deployment_path is not null
+        order by operation_time desc
+    </select>
+
+</mapper>

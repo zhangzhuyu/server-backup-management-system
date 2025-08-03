@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.WorkOrderMapper">
+
+    <!--  查询status处理完成的任务ids  -->
+    <select id="getProcessedStatusIds" resultType="java.lang.Integer">
+        select id
+        from ly_mw_work_order
+        where
+        <choose>
+            <when test="status != null">
+                work_status = #{status,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                work_status is null
+            </otherwise>
+        </choose>
+        and id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <!--  条件查询异常工单信息  -->
+    <select id="list" resultType="com.ly.cloud.backup.vo.WorkOrderVo">
+        select
+            orders.worker_id as workerId,
+            orders.id,
+            orders.record_id as recordId,
+            rule.id ruleId,
+            <!-- record.warning_object ruleObject, -->
+            <!-- rule.name ruleName, -->
+            record.warning_level warningLevel,
+            record.exception_type exceptionType,
+            record.reality_warning_object realityWarningObject,
+            orders.work_status workStatus,
+            orders.result_feedback resultFeedback,
+            orders.start_time startTime,
+            orders.end_time endTime,
+            orders.disregard,
+            u.nick_name workerName
+        from ly_mw_work_order orders
+        left join ly_mw_warning_record record on orders.record_id = record.id
+        left join ly_mw_warning_rule rule on record.rule_id = rule.id
+        left join ly_sys_user u on orders.worker_id = u.user_id
+        <where>
+            <if test="dto.targetList != null and dto.targetList.size() > 0 ">
+                and  rule.target in
+                <foreach collection="dto.targetList" open="(" separator="," item="target" close=")">
+                    #{target}
+                </foreach>
+            </if>
+            <if test="dto.warningLevelList != null and dto.warningLevelList.size() > 0">
+                and  rule.warning_level in
+                <foreach collection="dto.warningLevelList" open="(" separator="," item="warning_level" close=")">
+                    #{warning_level}
+                </foreach>
+            </if>
+            <if test="dto.workStatusList != null and dto.workStatusList.size() > 0">
+                and  orders.work_status in
+                <foreach collection="dto.workStatusList" open="(" separator="," item="work_status" close=")">
+                    #{work_status}
+                </foreach>
+            </if>
+            <if test="dto.content != null and dto.content != ''">
+                and ( record.warning_object like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  rule.name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+            </if>
+        </where>
+        order by record.operation_Time desc
+</select>
+
+<!--  异常工单详情数据  -->
+    <select id="detail" resultType="com.ly.cloud.backup.vo.WorkOrderVo">
+        select
+            orders.id,
+            rule.id ruleId,
+            rule.target target,
+            rule.name ruleName,
+            record.warning_level warningLevel,
+            record.exception_type exceptionType,
+            orders.work_status workStatus,
+            orders.worker_id handler,
+            orders.result_feedback feedback,
+            orders.feedback_time feedbackTime,
+            orders.start_time startTime,
+            orders.end_time endTime,
+            orders.disregard,
+            orders.remark
+        from ly_mw_work_order orders
+        left join ly_mw_warning_record record on orders.record_id = record.id
+        left join ly_mw_warning_rule rule on record.rule_id = rule.id
+        where orders.id = #{id}
+    </select>
+
+    <!--  批量更新工单数据  -->
+    <update id="batchTicketPoData">
+        update ly_mw_work_order ticket
+        inner join (
+        select id, #{date} as feedback_time, #{result} as result_feedback, #{status} as work_status
+        from ly_ts_ticket
+        where id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>
+        ) temp on ticket.id = temp.id
+        set
+        ticket.feedback_time = temp.feedback_time,
+        ticket.result_feedback = temp.result_feedback,
+        ticket.work_status = temp.work_status
+        where ticket.id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>
+    </update>
+
+    <select id="getOrderListByStatus" resultType="com.ly.cloud.backup.vo.WorkOrderVo">
+        select
+        orders.id,
+        orders.record_id as recordId,
+        orders.work_status workStatus,
+        orders.result_feedback resultFeedback,
+        orders.feedback_time feedbackTime,
+        orders.start_time startTime,
+        orders.end_time endTime,
+        orders.worker_id as workerId,
+        orders.disregard,
+        orders.operator_id operatorId,
+        orders.operation_time operationTime,
+        orders.remark remark
+        from ly_mw_work_order orders
+        <where>
+            <if test="status != null and status != ''">
+                orders.work_status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateStatusBath">
+        update ly_mw_work_order set result_feedback = #{dto.resultFeedback},work_status = #{dto.workStatus},worker_id = #{dto.workerId},feedback_time = #{currentDate},end_time = #{currentDate}
+        where work_status = '1'
+    </update>
+
+</mapper>

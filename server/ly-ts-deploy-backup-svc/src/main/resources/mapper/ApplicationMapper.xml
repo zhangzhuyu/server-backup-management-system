@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.ApplicationMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.ApplicationPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="business_domain" property="businessDomain" jdbcType="VARCHAR" />
+        <result column="english_name" property="englishName" jdbcType="VARCHAR" />
+        <result column="chinese_name" property="chineseName" jdbcType="VARCHAR" />
+        <result column="url" property="url" jdbcType="VARCHAR" />
+        <result column="server_id" property="serverId" jdbcType="VARCHAR" />
+        <result column="database_id" property="databaseId" jdbcType="VARCHAR" />
+        <result column="deployment_way" property="deploymentWay" jdbcType="VARCHAR" />
+        <result column="deployment_path" property="deploymentPath" jdbcType="VARCHAR" />
+        <result column="whether_monitoring" property="whetherMonitoring" jdbcType="VARCHAR" />
+        <result column="initial_operation" property="initialOperation" jdbcType="VARCHAR" />
+        <result column="health_status" property="healthStatus" jdbcType="VARCHAR" />
+        <result column="health_monitoring_url" property="healthMonitoringUrl" jdbcType="VARCHAR" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="affiliated_company" property="affiliatedCompany" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		business_domain,
+		english_name,
+		chinese_name,
+		url,
+		server_id,
+		database_id,
+		deployment_way,
+		deployment_path,
+		whether_monitoring,
+		initial_operation,
+		health_status,
+		health_monitoring_url,
+		serial_number,
+		operation_time,
+		operator_id,
+		affiliated_company,
+		remark
+    </sql>
+
+    <update id="updateHealthStatusByServerId">
+        UPDATE
+         ly_rm_application app
+         LEFT JOIN ly_rm_application_service appser on appser.application_id = app.id
+         set
+            app.health_status =#{healthStatus,jdbcType=VARCHAR}
+        WHERE
+            appser.service_id=#{serverId,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateHealthStatusByapplicationId">
+        UPDATE ly_rm_application app
+        SET app.health_status = (
+            SELECT
+            IF
+                ( pd=0, 1, 0 ) AS pd
+            FROM
+                (
+                SELECT
+                    COUNT( 1 ) AS pd
+                FROM
+                    ly_rm_application_service appser
+                    INNER JOIN ly_rm_service ser ON ser.id = appser.service_id
+                WHERE
+                    appser.application_id = #{applicationId,jdbcType=BIGINT}
+                    AND ser.health_status = '0'
+                ) t
+            )
+        WHERE
+            app.id = #{applicationId,jdbcType=BIGINT};
+    </update>
+
+    <update id="updateStatusErr" parameterType="java.util.List">
+        update ly_rm_application
+        <set>
+            health_status = 0
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateStatusSucc" parameterType="java.util.List">
+        update ly_rm_application
+        <set>
+            health_status = 1
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <resultMap id="ApplicationMap"
+               type="com.ly.cloud.backup.vo.ApplicationVo" extends="BaseResultMap">
+        <result column="deployment_ip" property="deploymentIp" jdbcType="VARCHAR" />
+
+    </resultMap>
+
+
+
+    <!-- 更新 -->
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="ApplicationMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_application
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="ApplicationMap"
+        parameterType="com.ly.cloud.backup.dto.ApplicationDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_application
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.businessDomain != null and dto.businessDomain != '' ">
+          and  BUSINESS_DOMAIN = #{dto.businessDomain,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.content != null and dto.content != '' ">
+          and  english_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') or chinese_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="dto.englishName != null and dto.englishName != '' ">
+          and  english_name = #{dto.englishName,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.chineseName != null and dto.chineseName != '' ">
+          and  chinese_name = #{dto.chineseName,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.url != null and dto.url != '' ">
+          and  URL = #{dto.url,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.serverId != null and dto.serverId != '' ">
+          and  SERVER_ID = #{dto.serverId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.databaseId != null and dto.databaseId != '' ">
+          and  DATABASE_ID = #{dto.databaseId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.deploymentWay != null and dto.deploymentWay != '' ">
+          and  DEPLOYMENT_WAY = #{dto.deploymentWay,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.deploymentPath != null and dto.deploymentPath != '' ">
+          and  deployment_path = #{dto.deploymentPath,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.whetherMonitoring != null and dto.whetherMonitoring != '' ">
+          and  WHETHER_MONITORING = #{dto.whetherMonitoring,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.initialOperation != null and dto.initialOperation != '' ">
+          and  initial_operation = #{dto.initialOperation,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.healthStatus != null and dto.healthStatus != '' ">
+          and  HEALTH_STATUS = #{dto.healthStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.affiliatedCompany != null and dto.affiliatedCompany != '' ">
+          and  affiliated_company = #{dto.affiliatedCompany,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.healthMonitoringUrl != null and dto.healthMonitoringUrl != '' ">
+          and  health_monitoring_url = #{dto.healthMonitoringUrl,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.serialNumber != null and dto.serialNumber != '' ">
+            and  serial_number = #{dto.serialNumber,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operationTime != null and dto.operationTime != '' ">
+          and  OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+        </if>
+        <if test="dto.operatorId != null and dto.operatorId != '' ">
+          and  OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+        order by
+            serial_number asc,
+            english_name desc,
+            id  desc
+    </select>
+
+    <select id="selectKeyServiceMonitoring" resultMap="ApplicationMap">
+        select
+            group_concat(service.deployment_ip) deployment_ip,
+            app.`name`,
+            app.initial_operation,
+            app.health_status
+        FROM
+            ly_rm_application app
+            LEFT JOIN ly_rm_service service on service.application_id =app.id
+        WHERE
+            app.whether_monitoring='1'
+        GROUP BY
+            app.id
+        ORDER BY
+            app.serial_number asc ,
+            app.operation_time desc,
+            app.`name` desc
+    </select>
+
+    <select id="selectMaxSerialNumber" resultType="java.lang.Integer">
+        select max(serial_number) from ly_rm_application
+    </select>
+
+
+
+</mapper>

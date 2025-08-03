@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.ServiceMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.ServicePo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="english_name" property="englishName" jdbcType="VARCHAR" />
+        <result column="chinese_name" property="chineseName" jdbcType="VARCHAR" />
+        <result column="application_id" property="applicationId" jdbcType="VARCHAR" />
+        <result column="server_id" property="serverId" jdbcType="VARCHAR" />
+        <result column="database_id" property="databaseId" jdbcType="VARCHAR" />
+        <result column="deployment_way" property="deploymentWay" jdbcType="VARCHAR" />
+        <result column="health_status" property="healthStatus" jdbcType="VARCHAR" />
+        <result column="source" property="source" jdbcType="VARCHAR" />
+        <result column="configuration_path" property="configurationPath" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		english_name,
+		chinese_name,
+		application_id,
+		server_id,
+		database_id,
+		deployment_way,
+		health_status,
+		source,
+		configuration_path,
+		operation_time,
+		operator_id,
+		remark
+    </sql>
+
+    <sql id="Service_Base_Column_List">
+		service.id,
+		service.english_name,
+		service.chinese_name,
+		service.application_id,
+		service.server_id,
+		service.database_id,
+		service.deployment_way,
+		service.health_status,
+		service.source,
+		service.configuration_path,
+		service.operation_time,
+		service.operator_id,
+		service.remark
+    </sql>
+    
+    <resultMap id="ServiceMap"
+               type="com.ly.cloud.backup.vo.ServiceVo" extends="BaseResultMap">
+        <result column="applicationNum" property="applicationNum" jdbcType="INTEGER" />
+        <collection column="{id=id}" property="applicationIds" select="selectAllApplication" />
+
+    </resultMap>
+
+    <resultMap id="ServiceAllMap"
+               type="com.ly.cloud.backup.vo.ServiceVo" extends="BaseResultMap">
+        <result column="ipv4" property="ipv4" jdbcType="VARCHAR" />
+        <result column="port" property="port" jdbcType="VARCHAR" />
+        <result column="user" property="user" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="hostname" property="hostname" jdbcType="VARCHAR" />
+        <result column="application_id2" property="applicationId2" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="ServiceMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_service
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+
+    <update id="updateStatusErr" parameterType="java.util.List">
+        update ly_rm_service
+        <set>
+            health_status = 0
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateStatusSucc" parameterType="java.util.List">
+        update ly_rm_service
+        <set>
+            health_status = 1
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="ServiceMap"
+        parameterType="com.ly.cloud.backup.dto.ServiceDto">
+        select
+        ser.*,
+        (select COUNT(1) FROM ly_rm_application_service appser where  appser.service_id=ser.id ) applicationNum
+        from ly_rm_service ser
+        left join ly_rm_application_service appser on  appser.service_id=ser.id
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ser.ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.englishName != null and dto.englishName != '' ">
+          and  ser.english_name like  concat('%', #{dto.englishName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="dto.chineseName != null and dto.chineseName != '' ">
+          and  ser.CHINESE_NAME = #{dto.chineseName,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.applicationId != null and dto.applicationId != '' ">
+          and  appser.APPLICATION_ID = #{dto.applicationId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.serverId != null and dto.serverId != '' ">
+          and  ser.server_id = #{dto.serverId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.databaseId != null and dto.databaseId != '' ">
+          and  ser.DATABASE_ID = #{dto.databaseId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.deploymentWay != null and dto.deploymentWay != '' ">
+          and  ser.DEPLOYMENT_WAY = #{dto.deploymentWay,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.healthStatus != null and dto.healthStatus != '' ">
+          and  ser.HEALTH_STATUS = #{dto.healthStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.source != null and dto.source != '' ">
+          and  ser.source = #{dto.source,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.configurationPath != null and dto.configurationPath != '' ">
+          and  ser.configuration_path = #{dto.configurationPath,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operationTime != null and dto.operationTime != '' ">
+          and  ser.OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+        </if>
+        <if test="dto.operatorId != null and dto.operatorId != '' ">
+          and  ser.OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  ser.REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+        ORDER BY
+            ser.OPERATION_TIME desc,
+            ser.ID desc,
+            ser.english_name desc
+    </select>
+
+    <select id="selectAllApplication" resultType="java.lang.String">
+        select
+            APPLICATION_ID
+        from ly_rm_application_service
+        where
+            SERVICE_ID = #{id,jdbcType=BIGINT}
+        order by
+            APPLICATION_ID
+    </select>
+
+    <select id="selectAllList"  resultMap="ServiceAllMap"
+            parameterType="com.ly.cloud.backup.dto.ServiceDto">
+        select
+        service.*,
+        server.ipv4,
+        server.port,
+        server.user,
+        server.password,
+        server.hostname
+        from ly_rm_service service
+        left join ly_rm_server server on server.id=service.server_id
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  service.ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.englishName != null and dto.englishName != '' ">
+                and  LOWER(service.english_name) like  concat('%', #{dto.englishName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.chineseName != null and dto.chineseName != '' ">
+                and  service.CHINESE_NAME = #{dto.chineseName,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.applicationId != null and dto.applicationId != '' ">
+                and  service.APPLICATION_ID = #{dto.applicationId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.serverId != null and dto.serverId != '' ">
+                and  service.server_id = #{dto.serverId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.databaseId != null and dto.databaseId != '' ">
+                and  service.DATABASE_ID = #{dto.databaseId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.deploymentWay != null and dto.deploymentWay != '' ">
+                and  service.DEPLOYMENT_WAY = #{dto.deploymentWay,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.healthStatus != null and dto.healthStatus != '' ">
+                and  service.HEALTH_STATUS = #{dto.healthStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.source != null and dto.source != '' ">
+                and  service.source = #{dto.source,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.configurationPath != null and dto.configurationPath != '' ">
+                and  service.configuration_path = #{dto.configurationPath,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  service.OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  service.OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  service.REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+        </where>
+        ORDER BY
+        service.OPERATION_TIME desc,
+        service.english_name desc,
+        service.ID desc
+    </select>
+
+    <select id="selectServiceByAppId" resultMap="ServiceAllMap"  parameterType="string">
+        select  <include refid="Service_Base_Column_List"/>
+        from ly_rm_service service
+        inner join ly_rm_application_service app_service on service.id = app_service.service_id
+        where  app_service.application_id = #{applicationId,jdbcType=VARCHAR}
+        <if test="healthStatus != null and healthStatus != ''">
+            and service.health_status = #{healthStatus,jdbcType=BIGINT}
+        </if>
+    </select>
+
+    <select id="selectService" resultMap="ServiceAllMap"  parameterType="string">
+        select  <include refid="Service_Base_Column_List"/>,app_service.application_id as application_id2
+        from ly_rm_service service
+        inner join ly_rm_application_service app_service on service.id = app_service.service_id
+        <if test="healthStatus != null and healthStatus != ''">
+            and service.health_status = #{healthStatus,jdbcType=BIGINT}
+        </if>
+        group by <include refid="Service_Base_Column_List"/>,app_service.application_id
+    </select>
+
+    <select id="selectServicesByNoApp"  resultMap="ServiceAllMap" >
+        select  service.*
+        from ly_rm_service service
+        where service.id not in
+        (select app_service.service_id from  ly_rm_application_service app_service)
+    </select>
+
+</mapper>

@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.PublicMapper">
+    <select id="findRobotUrl" resultType="java.lang.String">
+        select systray from ly_sm_system_setup
+        <where>
+            set_key like 'robotUrl'
+        </where>
+
+    </select>
+
+    <select id="findApplicationList" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        SELECT
+            id AS id,
+            english_name AS name,
+            chinese_name AS businessName,
+            deployment_way AS businessCode,
+            '4' AS parentValue
+        FROM ly_rm_application
+        <where>
+            <if test="whetherMonitoring != null and whetherMonitoring != '' ">
+                and  whether_monitoring = #{whetherMonitoring,jdbcType=VARCHAR}
+            </if>
+            <if test="content != null and content != '' ">
+                and  english_name like concat('%', #{content,jdbcType=VARCHAR}, '%') or chinese_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+            serial_number asc,
+            english_name desc,
+            id  desc
+    </select>
+
+    <select id="findServiceList" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        SELECT
+            id AS id,
+            english_name AS name,
+            chinese_name AS businessName,
+            '3' AS parentValue
+        FROM  ly_rm_service
+        <where>
+            <if test="content != null and content != '' ">
+                and ( english_name like concat('%', #{content,jdbcType=VARCHAR}, '%') or chinese_name like concat('%', #{content,jdbcType=VARCHAR}, '%') )
+            </if>
+        </where>
+        order by
+            id  desc,
+            english_name desc
+    </select>
+
+    <select id="selectAllServiceByAppId" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        select
+            ser.id AS id,
+		    ser.english_name AS name,
+		    ser.chinese_name AS businessName
+        from ly_rm_service ser
+        inner join ly_rm_application_service appSer on ser.id=appSer.service_id
+        where
+            appSer.application_id = #{id,jdbcType=BIGINT}
+        order by
+            ser.id desc,
+            ser.english_name desc
+    </select>
+
+    <select id="findNginxList" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        SELECT
+            id AS id,
+            name AS name
+        FROM ly_rm_nginx
+        <where>
+            <if test="content != null and content != '' ">
+                and  name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+            id  desc,
+            name desc
+    </select>
+
+    <select id="findServerList" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        SELECT
+            id AS id,
+            name,
+            ipv4 AS businessName,
+            '1' AS parentValue
+        FROM ly_rm_server
+
+        <where>
+            <if test="content != null and content != '' ">
+                and  hostName like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+        id  desc,
+        hostName desc
+    </select>
+    <select id="findDatabaseList" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        SELECT
+            id AS id,
+            name AS name,
+            ipv4 AS businessName,
+            '2' AS parentValue
+        FROM
+        ly_rm_database
+        <where>
+            <if test="content != null and content != '' ">
+                and  name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+        id  desc,
+        name desc
+    </select>
+
+    <select id="findMiddlewareList" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        SELECT
+        id AS id,
+        name AS name,
+        '5' AS parentValue
+        FROM
+        ly_rm_middleware
+        <where>
+            <if test="content != null and content != '' ">
+                and  name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+        id  desc,
+        name desc
+    </select>
+
+    <select id="findRoleList" resultType="com.ly.cloud.backup.vo.PublicBaseVo">
+        SELECT
+            role_id AS id,
+            role_name AS name
+        FROM
+            ly_sys_role
+        <where>
+            <if test="content != null and content != '' ">
+                and  role_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+            role_sort desc,
+            create_time desc,
+            role_id desc
+    </select>
+
+    <resultMap id="SystemDepartmentAllTreeMap"
+               type="com.ly.cloud.backup.vo.TreeSelectVo" extends="treeSelectBaseMap">
+
+        <collection column="{id=parentvalue}" property="children" select="SystemDepartmentAllParent" />
+    </resultMap>
+
+    <select id="getDepartment" resultMap="SystemDepartmentAllTreeMap">
+        SELECT
+        dept_id AS `key` ,
+        dept_id AS `value` ,
+        dept_name  AS title,
+        parent_id as parentvalue
+        FROM
+        ly_sys_dept
+        <where>
+            <if test="content != null and content != '' ">
+                and dept_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="SystemDepartmentAllParent" resultMap="SystemDepartmentAllTreeMap">
+        SELECT
+        dept_id AS `key` ,
+        dept_id AS `value` ,
+        dept_name  AS title,
+        parent_id as parentvalue
+        FROM
+        ly_sys_dept
+        <where>
+            dept_id=#{id,jdbcType=BIGINT}
+        </where>
+    </select>
+
+    <select id="findUserList" resultType="com.ly.cloud.backup.vo.SysUserVo">
+        SELECT
+            user_id,
+            user_name,
+            nick_name,
+            email,
+            dept_id as department,
+            phonenumber
+        FROM
+        ly_sys_user
+        <where>
+            <if test="content != null and content != '' ">
+                and  user_id like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+        user_id  desc,
+        user_name desc
+    </select>
+
+    <select id="findUserById" resultType="com.ly.cloud.backup.vo.SysUserVo">
+        SELECT
+            user_id,
+            user_name,
+            nick_name,
+            email,
+            dept_id department,
+            ding_talk,
+            phonenumber
+        FROM
+        ly_sys_user
+        <where>
+            <if test="id != null and id != '' ">
+                and  user_id = #{id}
+            </if>
+        </where>
+        order by
+        user_id  desc,
+        user_name desc
+    </select>
+
+    <select id="listUser" resultType="com.ly.cloud.backup.vo.SysUserVo">
+        select user_id, user_name, nick_name, u.email,  dept_name department, u.phonenumber,u.ding_talk,u.sex
+        from ly_sys_user u
+        inner join (
+        select *
+        from ly_sys_dept d
+        <where>
+            <if test="dto.department != null and dto.department != '' ">
+                and d.dept_id like concat('%', #{dto.department,jdbcType=VARCHAR}, '%')
+                or d.parent_id  like concat('%', #{dto.department,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        ) t
+        on u.dept_id = t.dept_id
+
+        <where>
+            <if test="dto.content != null and dto.content != '' ">
+                or  u.nick_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  u.user_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  u.email like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by user_id desc, user_name desc
+    </select>
+
+    <select id="getServerName" resultType="java.lang.String">
+        select ipv4 from ly_rm_server
+        where id = #{id}
+    </select>
+
+    <select id="getDatabaseName" resultType="java.lang.String">
+        select ipv4 from ly_rm_database
+        where id = #{id}
+    </select>
+
+    <select id="getServiceName" resultType="java.lang.String">
+        select english_name from ly_rm_service
+        where id = #{id}
+    </select>
+
+    <select id="getApplicationName" resultType="java.lang.String">
+        select english_name from ly_rm_application
+        where id = #{id}
+    </select>
+
+    <select id="getMiddlewareName" resultType="java.lang.String">
+        select ip from ly_rm_middleware
+        where id = #{id}
+    </select>
+
+    <resultMap id="treeSelectBaseMap" type="com.ly.cloud.backup.vo.TreeSelectVo" >
+        <result column="key" property="key" jdbcType="VARCHAR" />
+        <result column="value" property="value" jdbcType="VARCHAR" />
+        <result column="title" property="title" jdbcType="VARCHAR" />
+        <result column="parentValue" property="parentValue" jdbcType="VARCHAR" />
+
+    </resultMap>
+
+    <resultMap id="SystemMenuAllTreeMap"
+               type="com.ly.cloud.backup.vo.TreeSelectVo" extends="treeSelectBaseMap">
+
+        <collection column="{id=key,content=content}" property="children" select="selectSystemMenuAllTree" />
+    </resultMap>
+
+    <!-- 查询 树形结构 -->
+    <select id="selectTreeSystemMenu" resultMap="SystemMenuAllTreeMap">
+        select
+            menu_id as `key`,
+            menu_id as `value`,
+            menu_name as title,
+            parent_id as parentValue,
+            '${content}' as content
+        from ly_sys_menu
+        where
+            parent_id = -1
+        order by
+            order_num asc,
+            create_time desc,
+            menu_id desc
+    </select>
+
+    <select id="selectSystemMenuAllTree" resultMap="SystemMenuAllTreeMap">
+        select
+            menu_id as `key`,
+            menu_id as `value`,
+            menu_name as title,
+            parent_id as parentValue,
+            '${content}' as content
+        from ly_sys_menu
+        where
+            parent_id=#{id,jdbcType=BIGINT}
+            <if test="content != null and content != '' ">
+                and  menu_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        order by
+            order_num asc,
+            create_time desc,
+            menu_id desc
+    </select>
+
+    <resultMap id="SystemDeptAllTreeMap"
+               type="com.ly.cloud.backup.vo.TreeSelectVo" extends="treeSelectBaseMap">
+
+        <collection column="{id=key,content=content }" property="children" select="selectSystemDeptAllTree" />
+    </resultMap>
+
+    <!-- 查询 树形结构 -->
+    <select id="selectTreeSystemDept" resultMap="SystemDeptAllTreeMap">
+        select
+            dept_id as  `key`,
+            dept_id as `value`,
+            dept_name as title,
+            parent_id as parentValue,
+            '${content}' as content
+        from ly_sys_dept
+        where
+            parent_id = -1
+
+        order by
+            order_num asc,
+            dept_id desc
+    </select>
+
+    <select id="selectSystemDeptAllTree" resultMap="SystemDeptAllTreeMap">
+        select
+            dept_id as `key`,
+            dept_id as `value`,
+            dept_name as title,
+            parent_id as parentValue,
+            '${content}' as content
+        from ly_sys_dept
+        where
+            parent_id=#{id,jdbcType=BIGINT}
+            <if test="content != null and content != '' ">
+                and  dept_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        order by
+            order_num asc,
+            dept_id desc
+    </select>
+
+    <select id="selectTreeSystemUserByDeptId" resultType="com.ly.cloud.backup.vo.TreeSelectVo">
+        SELECT
+        user_id AS `key` ,
+        user_id AS `value` ,
+        nick_name  AS title,
+        user_name AS otherTitle,
+        dept_id as parentvalue
+        FROM
+        ly_sys_user
+        <where>
+            <if test="deptId != null and deptId != '' ">
+                and dept_id = #{deptId,jdbcType=VARCHAR}
+            </if>
+            <if test="content != null and content != '' ">
+                and nick_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+            user_name desc,
+            user_id  desc
+    </select>
+
+</mapper>

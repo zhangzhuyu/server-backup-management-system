@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.WarningRecordMapper">
+
+    <!--  批量新增集合  -->
+    <insert id="insertPoBatch" parameterType="java.util.List">
+        insert into ly_mw_warning_record(
+        id,
+        rule_id,
+        warning_object,
+        warning_level,
+        exception_type,
+        warning_description,
+        warning_time,
+        operator_id,
+        operation_time,
+        remark)
+        (
+        <foreach collection="list" item="row" index="index" separator="union all">
+            (select
+            #{row.id,jdbcType=BIGINT},
+            #{row.rule_id,jdbcType=VARCHAR},
+            #{row.warning_object,jdbcType=VARCHAR},
+            #{row.warning_level,jdbcType=VARCHAR},
+            #{row.exception_type,jdbcType=VARCHAR},
+            #{row.warning_description,jdbcType=VARCHAR},
+            #{row.warning_time,jdbcType=DATE},
+            #{row.operator_id,jdbcType=VARCHAR},
+            #{row.operation_time,jdbcType=DATE},
+            #{row.remark,jdbcType=VARCHAR}
+            from dual)
+        </foreach>
+        )
+    </insert>
+
+    <insert id="insertObjects" parameterType="java.util.List">
+        insert into ly_mw_warning_record_object(
+        id,
+        record_id,
+        warning_object,
+        object_type,
+        operator_id,
+        operation_time,
+        remark
+        )
+        values
+
+        <foreach collection="list" item="row" index="index" separator=",">
+            (
+            #{row.id, jdbcType=BIGINT},
+            #{row.recordId, jdbcType=VARCHAR},
+            #{row.warningObject, jdbcType=VARCHAR},
+            #{row.objectType, jdbcType=VARCHAR},
+            #{row.operatorId, jdbcType=VARCHAR},
+            #{row.operationTime, jdbcType=DATE},
+            #{row.remark, jdbcType=VARCHAR}
+            )
+        </foreach>
+    </insert>
+
+
+    <!--  批量删除数据  -->
+    <delete id="deleteByMulti">
+        delete from ly_mw_warning_record where id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>
+    </delete>
+
+    <delete id="deleteRecordObject">
+        delete from ly_mw_warning_record_object where record_id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>
+    </delete>
+
+    <delete id="deleteWorkOrderByRecordId">
+        delete from ly_mw_work_order where record_id in <foreach collection="list" item="item" open="(" separator="," close=")">#{item}</foreach>
+    </delete>
+
+
+    <!--  查找满足条件的订阅用户信息  -->
+    <select id="findUserByServer" resultType="java.lang.String">
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+        left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+        left join ly_rm_server s on s.id = c.subscribe_content
+        left join ly_mw_warning_subscription a on a.id = c.subscription_id
+        where  ipv4 like #{warningObject}
+        and a.enable = 1
+        group by o.object_user
+
+        union
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+        left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+        left join ly_mw_warning_subscription n on n.id = o.subscription_id
+        where  c.subscribe_content = "-1" and c.subscribe_type = "1" and c.enable = '1'
+
+
+    </select>
+
+    <!--  查找满足条件的订阅用户信息  -->
+    <select id="findUserByDatabase" resultType="java.lang.String">
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+         left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+         left join ly_mw_warning_subscription a on a.id = c.subscription_id
+        inner join ly_rm_database s on s.id = c.subscribe_content
+        where  ipv4 like #{ip} and port like #{port}
+        and a.enable = 1
+        group by o.object_user
+
+        union
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+        left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+        left join ly_mw_warning_subscription n on n.id = o.subscription_id
+        where  c.subscribe_content = "-1" and c.subscribe_type = "2" and c.enable = '1'
+
+    </select>
+
+    <!--  查找满足条件的订阅用户信息  -->
+    <select id="findUserByService" resultType="java.lang.String">
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+        left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+        left join ly_rm_service s on s.id = c.subscribe_content
+        left join ly_mw_warning_subscription a on a.id = c.subscription_id
+        where  english_name like #{warningObject}
+        and a.enable = 1
+        group by o.object_user
+
+        union
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+        left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+        left join ly_mw_warning_subscription n on n.id = o.subscription_id
+        where  c.subscribe_content = "-1" and  c.subscribe_type = "3" and c.enable = '1'
+    </select>
+
+    <!--  查找满足条件的订阅用户信息  -->
+    <select id="findUserByApplication" resultType="java.lang.String">
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+        left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+        left join ly_rm_application s on s.id = c.subscribe_content
+        left join ly_mw_warning_subscription a on a.id = c.subscription_id
+        where  health_monitoring_url like #{warningObject}
+        and a.enable = 1
+        group by o.object_user
+
+        union
+        select o.object_user
+        from ly_mw_warning_subscription_object o
+        left join ly_mw_warning_subscription_content c on c.subscription_id = o.subscription_id
+        left join ly_mw_warning_subscription n on n.id = o.subscription_id
+        where  c.subscribe_content = "-1" and c.subscribe_type = "4" and c.enable = '1'
+    </select>
+
+    <!--  条件查询告警记录信息  -->
+    <select id="list" resultType="com.ly.cloud.backup.vo.WarningRecordListVo">
+        select
+            record.id,
+            rule.id ruleId,
+            rule.target ruleObject,
+            rule.name ruleName,
+            record.warning_level warningLevel,
+            record.warning_object warningObject,
+            record.exception_type exceptionType,
+            record.warning_description warningDescription,
+            record.warning_time warningTime
+        from ly_mw_warning_record record
+        left join ly_mw_warning_rule rule on record.rule_id = rule.id
+        <where>
+            record.target = 1
+            <if test="dto.targetList != null and dto.targetList.size() > 0">
+                and rule.target in
+                <foreach collection="dto.targetList" open="(" separator="," item="target" close=")">
+                    #{target}
+                </foreach>
+            </if>
+            <if test="dto.warningLevelList != null and dto.warningLevelList.size() > 0">
+                and  rule.warning_level in
+                <foreach collection="dto.warningLevelList" open="(" separator="," item="warning_level" close=")">
+                    #{warning_level}
+                </foreach>
+            </if>
+            <if test="dto.content != null and dto.content != ''">
+                and ( record.warning_object like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  rule.name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+            </if>
+            <if test="dto.recordTypeList != null and dto.recordTypeList.size() > 0">
+                and record.target in
+                <foreach collection="dto.recordTypeList" open="(" separator="," item="type" close=")">
+                    #{type}
+                </foreach>
+            </if>
+        </where>
+        <if test="dto.columnKey == null or dto.columnKey == '' ">
+            order by record.operation_Time desc
+        </if>
+        <if test="dto.columnKey != null and dto.columnKey != '' ">
+            <if test="dto.order != null and dto.order != '' and dto.order == 'ascend'">
+                order by record.${dto.columnKey} asc
+            </if>
+            <if test="dto.order != null and dto.order != '' and dto.order == 'descend'">
+                order by record.${dto.columnKey} desc
+            </if>
+            <if test="dto.order == null or dto.order == '' or (dto.order != 'descend' and dto.order != 'ascend')">
+                order by record.${dto.columnKey} desc
+            </if>
+        </if>
+    </select>
+
+    <select id="findGapTime" resultType="java.lang.String">
+        select systray from ly_sm_system_setup
+        <where>
+            set_key like 'alarmGapTime'
+        </where>
+    </select>
+
+    <select id="selectWarningRecordByIds" resultType="com.ly.cloud.backup.vo.WarningRecordListVo">
+        select
+            record.id,
+            rule.id ruleId,
+            rule.target ruleObject,
+            rule.name ruleName,
+            record.warning_level warningLevel,
+            record.warning_object warningObject,
+            record.exception_type exceptionType,
+            record.warning_description warningDescription,
+            record.warning_time warningTime
+        from ly_mw_warning_record record
+        left join ly_mw_warning_rule rule on record.rule_id = rule.id
+        <where>
+            <if test="ids != null and ids.size() > 0">
+                and record.id in
+                <foreach collection="ids" open="(" item="id" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAllRecordId" resultType="string">
+        select record.id from ly_mw_warning_record record
+    </select>
+
+</mapper>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.ReportSubscriberMapper">
+
+    <resultMap id="BaseResultMap" type="com.ly.cloud.backup.po.ReportSubscriberPo">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="reportSubscriptionId" column="report_subscription_id" jdbcType="BIGINT"/>
+            <result property="subscriberId" column="subscriber_id" jdbcType="BIGINT"/>
+            <result property="operatorId" column="operator_id" jdbcType="VARCHAR"/>
+            <result property="operationTime" column="operation_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+        report_subscription_id,
+        subscriber_id,
+        operator_id,
+        operation_time
+    </sql>
+
+    <resultMap id="ReportSubscriberMap"
+               type="com.ly.cloud.backup.vo.ReportSubscriberVo" extends="BaseResultMap">
+        <result property="subscriberNmae" column="nick_name" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="ReportSubscriberMap"
+            parameterType="com.ly.cloud.backup.dto.ReportSubscriberDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_or_report_subscriber
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.reportSubscriptionId != null and dto.reportSubscriptionId != '' ">
+                and  report_subscription_id = #{dto.reportSubscriptionId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.subscriberId != null and dto.subscriberId != '' ">
+                and  subscriber_id = #{dto.subscriberId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  operator_id = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  operation_time = #{dto.operationTime,jdbcType=DATE}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询集合 -->
+    <select id="selectListAll" resultMap="ReportSubscriberMap"
+            parameterType="com.ly.cloud.backup.dto.ReportSubscriberDto">
+        select
+        sub.*,
+        user.nick_name
+        from ly_or_report_subscriber sub
+        left join ly_sys_user user on user.user_id=sub.subscriber_id
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  sub.id = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.reportSubscriptionId != null and dto.reportSubscriptionId != '' ">
+                and  sub.report_subscription_id = #{dto.reportSubscriptionId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.subscriberId != null and dto.subscriberId != '' ">
+                and  sub.subscriber_id = #{dto.subscriberId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  sub.operator_id = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  sub.operation_time = #{dto.operationTime,jdbcType=DATE}
+            </if>
+        </where>
+        order by
+            sub.operation_time desc,
+            sub.id
+    </select>
+
+    <!-- 查询集合 -->
+    <select id="selectUserIdListAll" resultMap="ReportSubscriberMap"
+            parameterType="com.ly.cloud.backup.dto.ReportSubscriptionDto">
+        select
+            distinct
+            siber.*,
+            user.nick_name
+        from ly_or_report_subscription stion
+        left join ly_or_report_subscriber siber on siber.report_subscription_id =stion.id
+        left join ly_sys_user user on user.user_id=siber.subscriber_id
+        where
+            stion.`enable`='1'
+            <if test="dto.id != null and dto.id != '' ">
+                and  stion.id = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.subscriptionType != null and dto.subscriptionType != '' ">
+                and  stion.subscription_type = #{dto.subscriptionType,jdbcType=VARCHAR}
+            </if>
+        order by
+            siber.operation_time desc,
+            siber.id
+    </select>
+
+</mapper>

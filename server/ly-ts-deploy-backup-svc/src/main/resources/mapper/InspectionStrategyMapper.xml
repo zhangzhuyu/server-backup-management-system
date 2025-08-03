@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.InspectionStrategyMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.InspectionStrategyPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="inspection_type" property="inspection_type" jdbcType="VARCHAR" />
+        <result column="scheduling_mode" property="scheduling_mode" jdbcType="VARCHAR" />
+        <result column="scheduling_period" property="scheduling_period" jdbcType="VARCHAR" />
+        <result column="execution_time" property="execution_time" jdbcType="DATE" />
+        <result column="interval_time" property="interval_time" jdbcType="DATE" />
+        <result column="whether_immediate" property="whether_immediate" jdbcType="VARCHAR" />
+        <result column="push_email" property="push_email" jdbcType="VARCHAR" />
+        <result column="push_ding_talk" property="push_ding_talk" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operator_id" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operation_time" jdbcType="DATE" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		inspection_type,
+		scheduling_mode,
+		scheduling_period,
+		execution_time,
+		interval_time,
+		whether_immediate,
+		push_email,
+		push_ding_talk,
+		operator_id,
+		operation_time,
+		remark
+    </sql>
+    
+    <resultMap id="InspectionStrategyMap"
+               type="com.ly.cloud.backup.vo.InspectionStrategyVo" extends="BaseResultMap">
+        
+    </resultMap>
+
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="InspectionStrategyMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_si_inspection_strategy
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="InspectionStrategyMap"
+        parameterType="com.ly.cloud.backup.dto.InspectionStrategyDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_si_inspection_strategy
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.name != null and dto.name != '' ">
+          and  NAME = #{dto.name,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.inspection_type != null and dto.inspection_type != '' ">
+          and  INSPECTION_TYPE = #{dto.inspection_type,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.scheduling_mode != null and dto.scheduling_mode != '' ">
+          and  SCHEDULING_MODE = #{dto.scheduling_mode,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.scheduling_period != null and dto.scheduling_period != '' ">
+          and  SCHEDULING_PERIOD = #{dto.scheduling_period,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.execution_time != null and dto.execution_time != '' ">
+          and  EXECUTION_TIME = #{dto.execution_time,jdbcType=DATE}
+        </if>
+        <if test="dto.interval_time != null and dto.interval_time != '' ">
+          and  INTERVAL_TIME = #{dto.interval_time,jdbcType=DATE}
+        </if>
+        <if test="dto.whether_immediate != null and dto.whether_immediate != '' ">
+          and  WHETHER_IMMEDIATE = #{dto.whether_immediate,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.push_email != null and dto.push_email != '' ">
+          and  PUSH_EMAIL = #{dto.push_email,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.push_ding_talk != null and dto.push_ding_talk != '' ">
+          and  PUSH_DING_TALK = #{dto.push_ding_talk,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operator_id != null and dto.operator_id != '' ">
+          and  OPERATOR_ID = #{dto.operator_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operation_time != null and dto.operation_time != '' ">
+          and  OPERATION_TIME = #{dto.operation_time,jdbcType=DATE}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+
+</mapper>

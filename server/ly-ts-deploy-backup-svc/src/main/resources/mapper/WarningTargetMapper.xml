@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.WarningTargetMapper">
+
+
+    <update id="enable">
+        update ly_mw_warning_target
+            set enable = #{status}
+        where id = #{id}
+    </update>
+
+    <!--  条件查询指标信息  -->
+    <select id="list" resultType="com.ly.cloud.backup.vo.WarningTargetVo">
+        select
+        t.id,
+        t.target_name,
+        t.target_type,
+        t.sql_line,
+        t.operator_type,
+        t.enable,
+        t.remark
+        from ly_mw_warning_target t
+
+        <where>
+            <if test="dto.targetTypeList != null and dto.targetTypeList.size() > 0 ">
+                and  target_type in
+                <foreach collection="dto.targetTypeList" open="(" separator="," item="target" close=")">
+                    #{target}
+                </foreach>
+            </if>
+            <if test="dto.operatorType != null and dto.operatorType != '' ">
+                and  t.operator_type like #{dto.operatorType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.content != null and dto.content != ''">
+                and ( t.target_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  t.sql_line like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+            </if>
+        </where>
+        order by t.operation_time desc
+    </select>
+
+    <!--  条件查询字段信息  -->
+    <select id="listField" resultType="com.ly.cloud.backup.vo.WarningFieldVo">
+        select
+        t.chinese_name,
+        t.english_name,
+        t.es_table
+        from ly_mw_warning_field t
+        <where>
+            <if test="dto.content != null and dto.content != ''">
+                and  t.chinese_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  t.english_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by t.operation_time desc
+    </select>
+
+    <update id="updateAllStatus" >
+        update ly_mw_warning_target set enable = #{status} where enable = #{statusCondition}
+    </update>
+
+</mapper>

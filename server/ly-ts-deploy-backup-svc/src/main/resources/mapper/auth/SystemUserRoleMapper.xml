@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.auth.mapper.SystemUserRoleMapper">
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.auth.po.SystemUserRolePo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="user_id" property="userId" jdbcType="BIGINT" />
+        <result column="role_id" property="roleId" jdbcType="BIGINT" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		user_id,
+		role_id
+    </sql>
+
+    <resultMap id="SystemUserRoleMap"
+               type="com.ly.cloud.auth.vo.SystemUserRoleVo" extends="BaseResultMap">
+
+    </resultMap>
+
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="SystemUserRoleMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_user_role
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="SystemUserRoleMap"
+            parameterType="com.ly.cloud.auth.dto.SystemUserRoleDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_user_role
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  id = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.userId != null and dto.userId != '' ">
+                and  user_id = #{dto.userId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.roleId != null and dto.roleId != '' ">
+                and  role_id = #{dto.roleId,jdbcType=BIGINT}
+            </if>
+        </where>
+        order by
+        id desc
+    </select>
+</mapper>

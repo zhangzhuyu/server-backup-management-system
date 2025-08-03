@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.LoginLogMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.LoginLogPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="user_account" property="userAccount" jdbcType="VARCHAR" />
+        <result column="login_time" property="loginTime" jdbcType="TIMESTAMP" />
+        <result column="visit_ip" property="visitIp" jdbcType="VARCHAR" />
+        <result column="browser_type" property="browserType" jdbcType="VARCHAR" />
+        <result column="token" property="token" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+		id,
+		user_account,
+		login_time,
+		visit_ip,
+		browser_type,
+        token
+    </sql>
+    
+    <resultMap id="LoginLogMap"
+               type="com.ly.cloud.backup.vo.LoginLogVo" extends="BaseResultMap">
+        <result column="operation_number" property="operationNumber" jdbcType="INTEGER" />
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="getDataById" resultMap="LoginLogMap"
+        parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sm_login_log
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <!-- 查询 -->
+<!--    <select id="select" resultMap="LoginLogMap"-->
+<!--        parameterType="com.ly.cloud.backup.dto.LoginLogDto">-->
+<!--        select-->
+<!--        <include refid="Base_Column_List" />-->
+<!--        from ly_sm_login_log-->
+<!--        <where>-->
+<!--        <if test="dto.id != null and dto.id != '' ">-->
+<!--          and  ID = #{dto.id,jdbcType=BIGINT}-->
+<!--        </if>-->
+<!--        <if test="dto.user_account != null and dto.user_account != '' ">-->
+<!--          and  user_account = #{dto.user_account,jdbcType=VARCHAR}-->
+<!--        </if>-->
+<!--        <if test="dto.login_timed != null and dto.login_time != '' ">-->
+<!--          and  login_time= #{dto.login_time,jdbcType=DATE}-->
+<!--        </if>-->
+<!--        <if test="dto.visit_ip != null and dto.visit_ip != '' ">-->
+<!--          and  visit_ip = #{dto.visit_ip,jdbcType=DATE}-->
+<!--        </if>-->
+<!--        <if test="dto.browser_type != null and dto.browser_type != '' ">-->
+<!--          and  browser_type = #{dto.browser_type,jdbcType=VARCHAR}-->
+<!--        </if>-->
+<!--        <if test="dto.session_id != null and dto.session_id != '' ">-->
+<!--          and  session_id = #{dto.session_id,jdbcType=VARCHAR}-->
+<!--         </if>-->
+<!--        </where>-->
+<!--    </select>-->
+
+    <!--获取用户ID和名称-->
+    <select id="getUserInfo" resultType="java.util.HashMap">
+        select user_id as "key",user_name as "value" FROM ly_sys_user
+    </select>
+
+
+    <!--按用户名分页模糊查询   -->
+    <!-- public IPage<LoginLogVo> select(@Param("page") Page<LoginLogVo> page, @Param("loginLogDto")LoginLogDto loginLogDto);-->
+     <select id="select" resultMap="LoginLogMap" >
+        SELECT l1.id,l1.user_account,l1.login_time,l1.visit_ip,l1.browser_type,COUNT(l2.login_logid) operation_number
+        FROM ly_sm_login_log l1
+        LEFT JOIN ly_sm_operation_log l2 ON l1.id=l2.login_logid
+        LEFT JOIN ly_sys_user l3 ON l1.user_account=l3.user_id
+        <where>
+        <!--<if test="loginLogDto.id != null and loginLogDto.id != '' ">
+             and  ID = #{loginLogDto.id,jdbcType=BIGINT}
+        </if>
+        <if test="loginLogDto.userAccount != null and loginLogDto.userAccount != '' ">
+             and  user_account = #{loginLogDto.userAccount,jdbcType=VARCHAR}
+        </if>
+        <if test="loginLogDto.loginTime != null and loginLogDto.loginTime != '' ">
+             and  login_time= #{loginLogDto.loginTime,jdbcType=DATE}
+        </if>
+        <if test="loginLogDto.visitIp != null and loginLogDto.visitIp != '' ">
+             and  visit_ip = #{loginLogDto.visitIp,jdbcType=DATE}
+        </if>
+        <if test="loginLogDto.browserType != null and loginLogDto.browserType != '' ">
+             and  browser_type = #{dto.browserType,jdbcType=VARCHAR}+
+        </if>
+        <if test="loginLogDto.token != null and loginLogDto.tken != '' ">
+             and  session_id = #{loginLogDto.token,jdbcType=VARCHAR}
+        </if>
+        <if test="loginLogDto.searchParam !=null and loginLogDto.searchParam !=''">
+             and l3.user_name like concat('%',#{loginLogDto.searchParam,jdbcType=VARCHAR},'%')
+        </if>-->
+        <if test="searchParam !=null and searchParam !=''">
+             and l3.user_name like concat('%',#{searchParam,jdbcType=VARCHAR},'%')
+        </if>
+        </where>
+        group by l1.id,l1.user_account,l1.login_time,l1.visit_ip,l1.browser_type
+        order by
+        <choose>
+            <when test="columnKey != null and columnKey == 'loginTime' and order != null and order == 'ascend'">
+                login_time asc
+            </when>
+            <when test="columnKey != null and columnKey == 'loginTime' and order != null and order == 'descend'">
+                login_time desc
+            </when>
+            <when test="columnKey != null and columnKey == 'operationNumber' and order != null and order == 'descend'">
+                operation_number desc
+            </when>
+            <when test="columnKey != null and columnKey == 'operationNumber' and order != null and order == 'descend'">
+                operation_number desc
+            </when>
+            <otherwise>
+                login_time desc
+            </otherwise>
+        </choose>
+     </select>
+
+
+    <select id="selectOne" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from ly_sm_login_log
+        where token = #{token ,jdbcType=BIGINT}
+        and user_account= #{userAccount ,jdbcType=VARCHAR}
+        ORDER BY id
+        limit 1
+    </select>
+
+</mapper>

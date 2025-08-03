@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.FirewallMapper">
+
+
+    <select id="select" resultType="com.ly.cloud.backup.vo.FirewallVo">
+        select
+            firewall.id as id,
+            firewall.name as name,
+            application_type as applicationType,
+            source_ip as sourceIp,
+            firewall.agreement,
+            firewall.port,
+            strategy,
+            firewall.operation_time as operationTime,
+            firewall.remark
+        from ly_rm_firewall firewall
+        <where>
+         <if test="dto.applicationType != null and dto.applicationType !=''">
+             and firewall.application_type=#{dto.applicationType,jdbcType=VARCHAR}
+         </if>
+         <if test="dto.strategy!= null and dto.strategy!= ''">
+             and firewall.strategy=#{dto.strategy,jdbcType=VARCHAR}
+         </if>
+         <if test="dto.serverId != null ">
+             and firewall.server_id = #{dto.serverId,jdbcType=BIGINT}
+         </if>
+         <if test="dto.content!= null and dto.content!= ''">
+             and ( firewall.name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')  or firewall.source_ip like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+         </if>
+        </where>
+    </select>
+</mapper>

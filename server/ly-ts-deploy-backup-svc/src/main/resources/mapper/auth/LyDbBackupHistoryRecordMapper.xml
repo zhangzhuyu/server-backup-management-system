@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.LyDbBackupHistoryRecordMapper">
+  <resultMap id="BaseResultMap" type="com.ly.cloud.backup.po.LyDbBackupHistoryRecordPo">
+    <!--@mbg.generated-->
+    <!--@Table ly_db_backup_history_record-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="backup_strategy_type" jdbcType="VARCHAR" property="backupStrategyType" />
+    <result column="backup_time" jdbcType="TIMESTAMP" property="backupTime" />
+    <result column="backup_status" jdbcType="VARCHAR" property="backupStatus" />
+    <result column="operator_id" jdbcType="VARCHAR" property="operatorId" />
+    <result column="operation_time" jdbcType="TIMESTAMP" property="operationTime" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="time_stamp" jdbcType="VARCHAR" property="timeStamp" />
+    <result column="strategy_id" jdbcType="VARCHAR" property="strategyId" />
+    <result column="proportion" jdbcType="VARCHAR" property="proportion" />
+  </resultMap>
+
+  <resultMap id="treeMap" type="com.ly.cloud.backup.vo.BackupDirectoryTreeVo">
+    <id column="id" jdbcType="BIGINT" property="value" />
+    <id column="parent_id" jdbcType="BIGINT" property="parentId" />
+    <result column="name" jdbcType="VARCHAR" property="label" />
+    <result column="directory_id" jdbcType="VARCHAR" property="directoryId" />
+    <collection column="{key=id}" property="children" select="selectTreeAllParent" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, title, backup_strategy_type, backup_time, backup_status, operator_id, operation_time, 
+    remark,time_stamp,strategy_id,proportion
+  </sql>
+
+  <select id="getTypeSourceWayList" resultMap="treeMap">
+    select id, `name`, parent_id ,directory_id from ly_db_backup_strategy_directory
+    where parent_id = -1
+  </select>
+  <select id="selectTreeAllParent"  resultMap="treeMap">
+    select id, `name`, parent_id, directory_id from ly_db_backup_strategy_directory
+    <where>
+      parent_id=#{key,jdbcType=BIGINT}
+    </where>
+  </select>
+
+  <select id="queryBackupHistoryList" resultType="com.ly.cloud.backup.po.LyDbBackupHistoryRecordPo">
+      select
+      h.id,
+      h.title,
+      h.backup_time,
+      h.backup_strategy_type,
+      h.backup_status,
+      h.operator_id,
+      h.operation_time operationTime,
+      h.remark,
+      h.time_stamp,
+     <!-- h.strategy_id,-->
+      s.id strategyId,
+      h.proportion,
+      h.total_method
+      from
+      ly_db_backup_history_record h left join ly_db_backup_strategy_record s on h.strategy_id = s.id
+      <where>
+          <if test="content != null and content != ''">
+              and (h.title like concat(concat("%",#{content}),"%")
+              or h.backup_strategy_type like concat(concat("%",#{content}),"%"))
+          </if>
+          <if test="strategyId != null and strategyId != ''">
+              and (h.strategy_id = #{strategyId})
+          </if>
+          <if test="totalMethodList != null and totalMethodList.size > 0">
+              and s.total_method in
+              <foreach collection="totalMethodList" open="(" separator="," close=")" item="totalMethod">
+                  #{totalMethod}
+              </foreach>
+          </if>
+          <if test="list != null and list.size > 0">
+              and h.strategy_id in
+              <foreach collection="list" open="(" separator="," close=")" item="strategyId">
+                  #{strategyId}
+              </foreach>
+          </if>
+          <choose>
+              <when test="authDeptId!=null and authDeptId!=''">
+                  and ( h.auth_dept_id regexp #{authDeptId,jdbcType=VARCHAR} or h.auth_dept_id is null )
+              </when>
+              <otherwise>
+                  and ( h.auth_dept_id like '%-1%' or h.auth_dept_id is null )
+              </otherwise>
+          </choose>
+      </where>
+      order by backup_time desc
+  </select>
+
+  <select id="selectBackupHistoryList" resultType="com.ly.cloud.backup.po.LyDbBackupStrategyDirectoryPo">
+    select
+        id id,
+        `name` name,
+        `type` type,
+        parent_id parentId,
+        directory_id directoryId
+    from
+        ly_db_backup_strategy_directory
+  </select>
+
+  <select id="selectBackupStrategyRecordListByCondition" resultType="string">
+    select
+        id
+    from
+        ly_db_backup_strategy_record
+    <where>
+      <if test="dto != null and dto.backupWay != null and dto.backupWay != ''">
+        backup_way = #{dto.backupWay}
+      </if>
+      <if test="dto != null and dto.dataSourceType != null and dto.DataSourceType != ''">
+        and data_source_type = #{dto.dataSourceType}
+      </if>
+      <if test="dto != null and dto.totalMethod != null and dto.totalMethod != ''">
+        and total_method = #{dto.totalMethod}
+      </if>
+        <choose>
+            <when test="dto.authDeptId!=null and dto.authDeptId!=''">
+                and ( auth_dept_id regexp #{dto.authDeptId,jdbcType=VARCHAR} or auth_dept_id is null )
+            </when>
+            <otherwise>
+                and ( auth_dept_id like '%-1%' or auth_dept_id is null )
+            </otherwise>
+        </choose>
+    </where>
+  </select>
+    <select id="queryBackupHistoryListPage" resultType="com.ly.cloud.backup.po.LyDbBackupHistoryRecordPo">
+        select
+        distinct h.id,
+        h.title,
+        h.backup_time,
+        h.backup_strategy_type,
+        h.backup_status,
+        h.operator_id,
+        h.operation_time,
+        h.remark,
+        h.time_stamp,
+        h.strategy_id,
+        h.proportion
+        from
+        ly_db_backup_history_record h
+        <where>
+            h.operation_time is true
+            <if test="content != null and content != ''">
+                and (h.title like concat(concat("%",#{content}),"%")
+                or h.backup_strategy_type like concat(concat("%",#{content}),"%"))
+            </if>
+            <if test="list != null and list.size > 0">
+                and h.strategy_id in
+                <foreach collection="list" open="(" separator="," close=")" item="strategyId">
+                    #{strategyId}
+                </foreach>
+            </if>
+            <choose>
+                <when test="authDeptId!=null and authDeptId!=''">
+                    and ( auth_dept_id regexp #{authDeptId,jdbcType=VARCHAR} or auth_dept_id is null )
+                </when>
+                <otherwise>
+                    and( auth_dept_id like '%-1%' or auth_dept_id is null )
+                </otherwise>
+            </choose>
+        </where>
+        order by backup_time desc
+    </select>
+
+    <select id="selectHistoryRecordById" resultType="com.ly.cloud.backup.po.LyDbBackupHistoryRecordPo">
+         select
+        distinct h.id,
+        h.title,
+        h.backup_time,
+        h.backup_strategy_type,
+        h.backup_status,
+        h.operator_id,
+        h.operation_time,
+        h.remark,
+        h.time_stamp,
+        h.strategy_id,
+        h.proportion,
+        u.user_name userName
+        from
+        ly_db_backup_history_record h left join ly_sys_user u on h.operator_id = u.user_id
+        where h.id = #{id}
+    </select>
+
+    <!--根据策略id和备份状态 更改备份时间-->
+    <update id="updateBackupTime">
+        update ly_db_backup_history_record set backup_time=#{nextTime,jdbcType=TIMESTAMP}
+        where strategy_id=#{id,jdbcType=VARCHAR} and backup_status=4
+    </update>
+
+
+    <delete id="deleteByStrategyIdAndStatus">
+        delete from ly_db_backup_history_record where strategy_id=#{id,jdbcType=VARCHAR} and backup_status=4
+    </delete>
+
+</mapper>

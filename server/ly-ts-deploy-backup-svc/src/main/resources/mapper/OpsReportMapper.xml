@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+        namespace="com.ly.cloud.backup.mapper.OpsReportMapper">
+
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.backup.po.OpsReportPo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="time_period" property="timePeriod" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="report_type" property="reportType" jdbcType="VARCHAR"/>
+        <result column="file_id" property="fileId" jdbcType="VARCHAR"/>
+        <result column="file_address" property="fileAddress" jdbcType="VARCHAR"/>
+        <result column="download_count" property="downloadCount" jdbcType="VARCHAR"/>
+        <result column="start_time" property="startTime" jdbcType="DATE"/>
+        <result column="end_time" property="endTime" jdbcType="DATE"/>
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR"/>
+        <result column="operation_time" property="operationTime" jdbcType="DATE"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		time_period,
+		name,
+		report_type,
+		file_id,
+		file_address,
+		download_count,
+		start_time,
+		end_time,
+		operator_id,
+		operation_time,
+		remark
+    </sql>
+
+    <resultMap id="OpsReportMap"
+               type="com.ly.cloud.backup.vo.OpsReportVo" extends="BaseResultMap">
+        <result column="template_name" property="templateName" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="OpsReportMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from ly_or_ops_report
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 按条件查询 -->
+    <select id="selectByDto" resultMap="OpsReportMap"
+            parameterType="com.ly.cloud.backup.dto.OpsReportDto">
+        select
+        <include refid="Base_Column_List"/>
+        from ly_or_ops_report
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.timePeriod != null and dto.timePeriod != '' ">
+                and TIME_PERIOD = #{dto.timePeriod,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.name != null and dto.name != '' ">
+                and NAME like concat('%', #{dto.name,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.reportType != null and dto.reportType != '' ">
+                and REPORT_TYPE = #{dto.reportType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.downloadCount != null and dto.downloadCount != '' ">
+                and DOWNLOAD_COUNT = #{dto.downloadCount,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.startTime != null and dto.startTime != '' and dto.endTime != null and dto.endTime != '' ">
+                and start_time = #{dto.startTime,jdbcType=VARCHAR}
+            </if>
+        </where>
+        order by
+        OPERATION_TIME desc,
+        NAME desc,
+        ID desc
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="OpsReportMap"
+            parameterType="com.ly.cloud.backup.dto.OpsReportDto">
+        select
+            report.*,
+            reTp.template_name
+        from ly_or_ops_report report
+        left join ly_or_report_template reTp on reTp.id=report.file_id
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and report.ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.timePeriod != null and dto.timePeriod != '' ">
+                and report.TIME_PERIOD = #{dto.timePeriod,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.name != null and dto.name != '' ">
+                and report.NAME = #{dto.name,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.reportType != null and dto.reportType != '' ">
+                and report.REPORT_TYPE = #{dto.reportType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.downloadCount != null and dto.downloadCount != '' ">
+                and report.DOWNLOAD_COUNT = #{dto.downloadCount,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and report.OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and report.OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and report.REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+        </where>
+        order by
+            report.OPERATION_TIME desc,
+            report.NAME desc,
+            report.ID desc
+    </select>
+
+    <!--资产与监控统计-->
+    <select id="assetAndMonitoringStatistics" resultMap="OpsReportMap">
+        select
+        <include refid="Base_Column_List"/>
+        from ly_or_ops_report
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+</mapper>

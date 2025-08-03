@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.WarningRecordObjectMapper">
+
+   <!--  获取按告警目标（等级）统计数据  -->
+    <select id="alarmTargetStatistics" resultType="com.ly.cloud.backup.vo.WarningRecordObjectVo" parameterType="com.ly.cloud.backup.dto.OpsReportDto">
+        select
+            record_object.warning_object AS warningObject,
+            record_object.object_type AS objectType,
+            server.name as serverName,
+            application.english_name as applicationName,
+            service.english_name as serviceName,
+            da.name as databaseName,
+            count( * ) AS count
+        from ly_mw_warning_record_object record_object
+        LEFT JOIN ly_mw_warning_record record ON record_object.record_id = record.id
+        LEFT JOIN ly_rm_server server on server.id=record_object.warning_object
+        LEFT JOIN ly_rm_application application ON application.id = record_object.warning_object
+        LEFT JOIN ly_rm_service service on service.id=record_object.warning_object
+        LEFT JOIN ly_rm_database da on da.id=record_object.warning_object
+        where
+            record.warning_level is not null
+            and record_object.object_type = #{dto.objectType,jdbcType=BIGINT}
+            and (record.warning_time &gt;=#{dto.startTime,jdbcType=TIMESTAMP} and record.warning_time &lt;=#{dto.endTime,jdbcType=TIMESTAMP})
+        group by
+            server.name,
+            service.english_name,
+            application.english_name,
+            da.name,
+            record_object.warning_object,
+            record_object.object_type;
+    </select>
+
+</mapper>

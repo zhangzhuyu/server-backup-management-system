@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.ReportTemplateMapper">
+
+    <resultMap id="BaseResultMap" type="com.ly.cloud.backup.po.ReportTemplatePo">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="templateName" column="template_name" jdbcType="VARCHAR"/>
+            <result property="uploaderId" column="uploader_id" jdbcType="VARCHAR"/>
+            <result property="uploadTime" column="upload_time" jdbcType="TIMESTAMP"/>
+            <result property="operationState" column="operation_state" jdbcType="VARCHAR"/>
+            <result property="defaultTemplate" column="default_template" jdbcType="VARCHAR"/>
+            <result property="enable" column="enable" jdbcType="VARCHAR"/>
+            <result property="createId" column="create_id" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="operatorId" column="operator_id" jdbcType="VARCHAR"/>
+            <result property="operationTime" column="operation_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,
+        template_name,
+        uploader_id,
+        upload_time,
+        operation_state,
+        default_template,
+        enable,
+        create_id,
+        create_time,
+        operator_id,
+        operation_time,
+        remark
+    </sql>
+
+    <resultMap id="ReportTemplateMap"
+               type="com.ly.cloud.backup.vo.ReportTemplateVo" extends="BaseResultMap">
+
+    </resultMap>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="ReportTemplateMap"
+            parameterType="com.ly.cloud.backup.dto.ReportTemplateDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_or_report_template retp
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  retp.ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.templateName != null and dto.templateName != '' ">
+                and retp.template_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.uploaderId != null and dto.uploaderId != '' ">
+                and  retp.uploader_id = #{dto.uploaderId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.uploadTime != null and dto.uploadTime != '' ">
+                and  retp.upload_time = #{dto.uploadTime,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationState != null and dto.operationState != '' ">
+                and  retp.operation_state = #{dto.operationState,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.defaultTemplate != null and dto.defaultTemplate != '' ">
+                and  retp.default_template = #{dto.defaultTemplate,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.enable != null and dto.enable != '' ">
+                and  retp.enable = #{dto.enable,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.createId != null and dto.createId != '' ">
+                and  retp.create_id = #{dto.createId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.createTime != null and dto.createTime != '' ">
+                and  retp.create_time = #{dto.createTime,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  retp.operator_id = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  retp.operation_time = #{dto.operationTime,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  retp.REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and retp.template_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+<!--            <if test="dto.healthStatusList != null ">-->
+<!--                and retp.health_status in-->
+<!--                <foreach collection="dto.healthStatusList" item="item" open="(" separator="," close=")">-->
+<!--                    #{item}-->
+<!--                </foreach>-->
+<!--            </if>-->
+<!--            <if test="dto.testStatusList != null ">-->
+<!--                and retp.test_status in-->
+<!--                <foreach collection="dto.testStatusList" item="item" open="(" separator="," close=")">-->
+<!--                    #{item}-->
+<!--                </foreach>-->
+<!--            </if>-->
+
+        </where>
+        order by
+            retp.create_time desc,
+            retp.OPERATION_TIME desc,
+            retp.ID desc
+    </select>
+
+</mapper>

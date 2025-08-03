@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.DatabaseCheckMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.DatabaseCheckPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="source_id" property="sourceId" jdbcType="VARCHAR" />
+        <result column="exception_table" property="exceptionTable" jdbcType="VARCHAR" />
+        <result column="exception_column" property="exceptionColumn" jdbcType="VARCHAR" />
+        <result column="column_type" property="columnType" jdbcType="VARCHAR" />
+        <result column="column_length" property="columnLength" jdbcType="VARCHAR" />
+        <result column="exception_description" property="exceptionDescription" jdbcType="VARCHAR" />
+        <result column="work_status" property="workStatus" jdbcType="VARCHAR" />
+        <result column="worker_id" property="workerId" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+		id,
+		source_id,
+		exception_table,
+		exception_column,
+		column_type,
+		column_length,
+		exception_description,
+		work_status,
+		worker_id,
+		operation_time,
+		operator_id,
+		remark
+    </sql>
+
+    <resultMap id="DatabaseCheckMap"
+               type="com.ly.cloud.backup.vo.DatabaseCheckVo" extends="BaseResultMap">
+    </resultMap>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="DatabaseCheckMap"
+        parameterType="com.ly.cloud.backup.dto.DatabaseCheckDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_database_check
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.source_id != null and dto.source_id != '' ">
+          and  SOURCE_ID = #{dto.source_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.exception_table != null and dto.exception_table != '' ">
+          and  EXCEPTION_TABLE = #{dto.exception_table,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.exception_column != null and dto.exception_column != '' ">
+          and  EXCEPTION_COLUMN = #{dto.exception_column,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.column_type != null and dto.column_type != '' ">
+          and  COLUMN_TYPE = #{dto.column_type,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.column_length != null and dto.column_length != '' ">
+          and  COLUMN_LENGTH = #{dto.column_length,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.exception_description != null and dto.exception_description != '' ">
+          and  EXCEPTION_DESCRIPTION = #{dto.exception_description,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.work_status != null and dto.work_status != '' ">
+          and  WORK_STATUS = #{dto.work_status,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.worker_id != null and dto.worker_id != '' ">
+          and  WORKER_ID = #{dto.worker_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operation_time != null and dto.operation_time != '' ">
+          and  OPERATION_TIME = #{dto.operation_time,jdbcType=DATE}
+        </if>
+        <if test="dto.operator_id != null and dto.operator_id != '' ">
+          and  OPERATOR_ID = #{dto.operator_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.FlowMonitoringMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.FlowMonitoringPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="application_id" property="applicationId" jdbcType="BIGINT" />
+        <result column="nginx_id" property="nginxId" jdbcType="BIGINT" />
+        <result column="agent_address" property="agentAddress" jdbcType="VARCHAR" />
+        <result column="agent_address_name" property="agentAddressName" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		application_id,
+		nginx_id,
+		agentAddress,
+		agentAddressName,
+		operation_time,
+		operator_id,
+		serial_number,
+		remark
+    </sql>
+    
+    <resultMap id="FlowMonitoringMap"
+               type="com.ly.cloud.backup.vo.FlowMonitoringVo" extends="BaseResultMap">
+        <result column="appEnglishName" property="appEnglishName" jdbcType="VARCHAR" />
+        <result column="appChineseName" property="appChineseName" jdbcType="VARCHAR" />
+        <result column="appAccessAddress" property="appAccessAddress" jdbcType="VARCHAR" />
+        <result column="hostname" property="hostname" jdbcType="VARCHAR" />
+        <result column="ipv4" property="ipv4" jdbcType="VARCHAR" />
+        <result column="serverId" property="serverId" jdbcType="VARCHAR" />
+        <result column="path" property="path" jdbcType="VARCHAR" />
+
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="FlowMonitoringMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_flow_monitoring
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="FlowMonitoringMap"
+            parameterType="com.ly.cloud.backup.dto.FlowMonitoringDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_flow_monitoring
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.applicationId != null and dto.applicationId != '' ">
+                and  APPLICATION_ID = #{dto.applicationId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.nginx_id != null and dto.nginx_id != '' ">
+                and  nginx_id = #{dto.nginx_id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.agentAddress != null and dto.agentAddress != '' ">
+                and  agent_address = #{dto.agentAddress,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.agentAddressName != null and dto.agentAddressName != '' ">
+                and  agent_address_name = #{dto.agentAddressName,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+        </where>
+        order by
+            mon.serial_number asc,
+            mon.OPERATION_TIME desc,
+            mon.id desc
+    </select>
+
+    <!-- 查询 -->
+    <select id="selectAllById" resultMap="FlowMonitoringMap"
+            parameterType="com.ly.cloud.backup.dto.FlowMonitoringDto">
+        select
+        mon.*,
+        app.english_name appEnglishName,
+        app.chinese_name appChineseName,
+        app.url appAccessAddress,
+        app.health_status appHealthStatus,
+        ser.id serverId,
+        ser.hostname hostname,
+        ser.ipv4 ipv4,
+        ngx.deployment_path path
+        from ly_rm_flow_monitoring mon
+        left join ly_rm_application app on app.id=mon.application_id
+        left join ly_rm_nginx ngx on ngx.id=mon.nginx_id
+        left join ly_rm_server ser on ser.id=ngx.server_id
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  mon.ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.applicationId != null and dto.applicationId != '' ">
+                and  mon.APPLICATION_ID = #{dto.applicationId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and (mon.agent_address like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') or app.english_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+            </if>
+            <if test="dto.nginxId != null">
+                and  mon.nginx_id = #{dto.nginxId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.agentAddress != null and dto.agentAddress != '' ">
+                and  mon.agent_address = #{dto.agentAddress,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  mon.OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  mon.OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  mon.REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+        </where>
+        order by
+            mon.serial_number asc,
+            mon.OPERATION_TIME desc,
+            mon.id desc
+    </select>
+    <select id="selectMaxSerialNumberByNginx" resultType="java.lang.Integer">
+        select max(serial_number) from ly_rm_flow_monitoring where nginx_id = #{id,jdbcType=BIGINT}
+    </select>
+
+
+</mapper>

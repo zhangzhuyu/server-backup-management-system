@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.auth.mapper.SystemDeptMapper">
+
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.auth.po.SystemDeptPo">
+        <id column="dept_id" property="deptId" jdbcType="BIGINT" />
+        <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+        <result column="ancestors" property="ancestors" jdbcType="VARCHAR" />
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+        <result column="order_num" property="orderNum" jdbcType="INTEGER" />
+        <result column="leader" property="leader" jdbcType="VARCHAR" />
+        <result column="phone" property="phone" jdbcType="VARCHAR" />
+        <result column="email" property="email" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="del_flag" property="delFlag" jdbcType="VARCHAR" />
+        <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="DATE" />
+        <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="DATE" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		dept_id,
+		parent_id,
+		ancestors,
+		dept_name,
+		order_num,
+		leader,
+		phone,
+		email,
+		status,
+		del_flag,
+		create_by,
+		create_time,
+		update_by,
+		update_time
+    </sql>
+
+    <resultMap id="SystemDeptMap"
+               type="com.ly.cloud.auth.vo.SystemDeptVo" extends="BaseResultMap">
+
+    </resultMap>
+
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="SystemDeptMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_dept
+        where dept_id = #{deptId,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="SystemDeptMap"
+            parameterType="com.ly.cloud.auth.dto.SystemDeptDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_dept
+        <where>
+            <if test="dto.deptId != null and dto.deptId != '' ">
+                and  dept_id = #{dto.deptId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.parentId != null and dto.parentId != '' ">
+                and  parent_id = #{dto.parentId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.deptName != null and dto.deptName != '' ">
+                and  dept_name like concat('%', #{dto.deptName,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+            parent_id,
+            order_num desc,
+            create_time desc,
+            dept_id desc
+    </select>
+
+    <resultMap id="SystemDeptAllTreeMap"
+               type="com.ly.cloud.auth.vo.SystemDeptVo" extends="BaseResultMap">
+
+        <collection column="{id=dept_id}" property="children" select="querySystemDeptAllTree" />
+    </resultMap>
+
+    <!-- 查询 树形结构 -->
+    <select id="queryTreeSystemDeptAll" resultMap="SystemDeptAllTreeMap">
+        select
+            *
+        from ly_sys_dept
+        where
+            parent_id = -1
+        <if test="dto.deptName != null and dto.deptName != '' ">
+            and  dept_name like concat('%', #{dto.deptName,jdbcType=VARCHAR}, '%')
+        </if>
+        order by
+            order_num asc,
+            dept_id desc
+    </select>
+
+    <select id="querySystemDeptAllTree" resultMap="SystemDeptAllTreeMap">
+        select
+            *
+        from ly_sys_dept
+        where
+            parent_id=#{id,jdbcType=BIGINT}
+        order by
+            order_num asc,
+            dept_id desc
+    </select>
+
+    <!-- 查询 树形结构 -->
+    <select id="queryAll" resultMap="SystemDeptAllTreeMap">
+        select
+        *
+        from ly_sys_dept
+        where
+        parent_id = -1
+        order by
+        order_num asc,
+        dept_id desc
+    </select>
+
+    <!-- 查询部门与上级部门的集合 -->
+    <select id="queryChildAndParent" resultType="com.ly.cloud.auth.vo.DeptChildParentIdPairVO">
+        select dept_id  deptId,
+               parent_id parentDeptId
+        from ly_sys_dept
+    </select>
+
+    <!-- 根据主键查询所有子菜单Id(包含当前菜单) -->
+    <select id="querySubDeptById" resultMap="SystemDeptMap">
+        SELECT
+            t3.dept_id
+        FROM
+            (
+                SELECT
+                    t1.dept_id,
+                    IF (
+                                FIND_IN_SET(t1.parent_id, @pids) > 0,
+                                @pids := CONCAT(@pids, ',', t1.dept_id),
+                                0
+                        ) AS ischild
+                FROM
+                    (
+                        SELECT
+                            t.dept_id,
+                            t.parent_id
+                        FROM
+                            ly_sys_dept t
+                    ) t1,
+                    (
+                        SELECT
+                            @pids := #{id,jdbcType=BIGINT}
+                    ) t2
+            ) t3
+        WHERE
+            t3.ischild != 0 OR t3.dept_id = #{id,jdbcType=BIGINT}
+        ORDER BY t3.dept_id asc
+    </select>
+
+    <select id="queryByIds" resultMap="SystemDeptMap" parameterType="java.util.List">
+        select
+        dept.*
+        from ly_sys_dept dept
+        <where>
+            <if test="list != null and list.size()>0">
+                and dept.dept_id in
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="content != null and content != '' ">
+                and dept.dept_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+        dept.order_num asc,
+        dept.create_time desc,
+        dept.dept_id desc
+    </select>
+
+    <!-- 查询所有部门名称 -->
+    <select id="queryDeptNameAll" resultType="String">
+        select dept_name
+        from ly_sys_dept
+    </select>
+</mapper>

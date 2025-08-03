@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.RecoveryRecordMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.RecoveryRecordPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="recovery_id" property="recovery_id" jdbcType="VARCHAR" />
+        <result column="service_id" property="service_id" jdbcType="VARCHAR" />
+        <result column="start_time" property="start_time" jdbcType="DATE" />
+        <result column="end_time" property="end_time" jdbcType="DATE" />
+        <result column="recovery_count" property="recovery_count" jdbcType="BIGINT" />
+        <result column="operator_id" property="operator_id" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operation_time" jdbcType="DATE" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		recovery_id,
+		service_id,
+		start_time,
+		end_time,
+		recovery_count,
+		operator_id,
+		operation_time,
+		remark
+    </sql>
+    
+    <resultMap id="RecoveryRecordMap"
+               type="com.ly.cloud.backup.vo.RecoveryRecordVo" extends="BaseResultMap">
+        
+    </resultMap>
+
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="RecoveryRecordMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_fr_recovery_record
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="RecoveryRecordMap"
+        parameterType="com.ly.cloud.backup.dto.RecoveryRecordDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_fr_recovery_record
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.recovery_id != null and dto.recovery_id != '' ">
+          and  RECOVERY_ID = #{dto.recovery_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.service_id != null and dto.service_id != '' ">
+          and  SERVICE_ID = #{dto.service_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.start_time != null and dto.start_time != '' ">
+          and  START_TIME = #{dto.start_time,jdbcType=DATE}
+        </if>
+        <if test="dto.end_time != null and dto.end_time != '' ">
+          and  END_TIME = #{dto.end_time,jdbcType=DATE}
+        </if>
+        <if test="dto.recovery_count != null and dto.recovery_count != '' ">
+          and  RECOVERY_COUNT = #{dto.recovery_count,jdbcType=BIGINT}
+        </if>
+        <if test="dto.operator_id != null and dto.operator_id != '' ">
+          and  OPERATOR_ID = #{dto.operator_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operation_time != null and dto.operation_time != '' ">
+          and  OPERATION_TIME = #{dto.operation_time,jdbcType=DATE}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+
+</mapper>

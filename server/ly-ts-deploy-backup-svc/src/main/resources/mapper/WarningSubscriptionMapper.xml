@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.WarningSubscriptionMapper">
+    <resultMap id="UserListMap" type="com.ly.cloud.backup.vo.WarningSubscriptionListVo">
+        <id column="id" property="id"/>
+        <result column="enable" property="enable"/>
+        <result column="subscriptionTitle" property="subscriptionTitle"/>
+        <result column="hostName" property="hostName"/>
+        <result column="databaseName" property="databaseName"/>
+        <result column="serviceName" property="serviceName"/>
+        <result column="applicationName" property="applicationName"/>
+        <result column="middlewareName" property="middlewareName"/>
+        <result column="subTypes" property="subTypes"/>
+        <collection property="userList" ofType="com.ly.cloud.backup.vo.UserVo"
+                    column="{id=id}" select="selectUserBySubscriptionId" />
+    </resultMap>
+    <!-- 以下写查询方法 -->
+    <!--  条件查询告警记录信息  -->
+    <select id="list" resultMap="UserListMap">
+    select a.id id,
+       t.enable,
+       a.title subscriptionTitle,
+       t.hname hostName,
+       t.dname databaseName,
+       t.sname serviceName,
+       t.aname applicationName,
+       t.mname middlewareName,
+       t.type subTypes
+from ly_mw_warning_subscription a
+left join (
+    select t.id                  id,
+           t.type                `type`,
+           t.enable enable,
+           group_concat(t.hname) hname,
+           group_concat(t.dname) dname,
+           group_concat(t.sname) sname,
+           group_concat(t.aname) aname,
+           group_concat(t.mname) mname
+    from (
+             select a.subscription_id id,
+                    a.subscribe_type `type`,
+                    a.enable enable,
+                    case a.subscribe_type
+                        when '1' then (select b.name
+                                       from ly_rm_server b
+                                       where b.id = a.subscribe_content
+                        )
+                        else null end hname,
+
+                    case a.subscribe_type
+                        when '2' then (select b.name
+                                       from ly_rm_database b
+                                       where b.id = a.subscribe_content
+                        )
+                        else null end dname,
+                    case a.subscribe_type
+                        when '3' then (select b.english_name
+                                       from ly_rm_service b
+                                       where b.id = a.subscribe_content
+                        )
+                        else null end sname,
+                    case a.subscribe_type
+                        when '4' then (select b.english_name
+                                       from ly_rm_application b
+                                       where b.id = a.subscribe_content
+                        )
+                        else null end aname,
+                     case a.subscribe_type
+                        when '5' then (select b.name
+                                       from ly_rm_middleware b
+                                       where b.id = a.subscribe_content
+                        )
+                        else null end mname
+             from ly_mw_warning_subscription_content a
+         ) t
+    group by t.id,t.type,t.enable
+) t on t.id = a.id
+        <where>
+            <if test="dto.content != null and dto.content != '' ">
+                and  t.hname like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  t.dname like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  t.sname like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  t.aname like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  t.mname like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  a.title like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.targetList != null and dto.targetList.size() > 0 ">
+                and  t.type in
+                <foreach collection="dto.targetList" open="(" separator="," item="target" close=")">
+                    #{target}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectUserBySubscriptionId" resultType="com.ly.cloud.backup.vo.UserVo">
+        select u.user_id id,u.nick_name name from ly_mw_warning_subscription a
+        left join ly_mw_warning_subscription_object c on c.subscription_id = a.id
+        left join ly_sys_user u on u.user_id = c.object_user where a.id = #{id}
+    </select>
+
+    <!--  查询所有订阅信息  -->
+    <select id="getContentData" resultType="com.ly.cloud.backup.po.WarningSubscriptionContentPo">
+        select
+        id,
+        subscription_id,
+        subscribe_type,
+        subscribe_content
+        from ly_mw_warning_subscription_content
+        where subscription_id = #{subId} and subscribe_type = #{subType}
+    </select>
+
+    <!--  查询所有订阅目标信息  -->
+    <select id="getObjectData" resultType="com.ly.cloud.backup.po.WarningSubscriptionObjectPo">
+        select
+        id,
+        subscription_id,
+        object_department,
+        object_user
+        from ly_mw_warning_subscription_object
+        where subscription_id = #{subId}
+    </select>
+
+    <!--  查询所有订阅人信息  -->
+    <select id="getUserList" resultType="java.lang.String">
+        select
+        object_user
+        from ly_mw_warning_subscription_object
+        where subscription_id = #{subId}
+    </select>
+
+    <select id="listSubMethod" resultType="com.ly.cloud.backup.vo.WarningSubMethodVo">
+        select id,level_id,level_name,enable_content
+        from ly_mw_warning_subscription_method order by level_id desc
+    </select>
+
+    <select id="getSubMethodById" resultType="java.lang.String">
+        select enable_content from ly_mw_warning_subscription_method
+        where level_id = #{levelId}
+    </select>
+
+    <!--  获取用户数据sql  -->
+    <sql id="getUserData">
+        select
+            u.user_id userId,
+            u.user_name userName,
+            u.nick_name nickName,
+            u.email,
+            u.phone,
+            u.department
+        from
+            ly_sys_user u
+        where u.status = '0'
+    </sql>
+
+
+    <!-- 以下写插入方法 -->
+    <!--  批量新增集合  -->
+    <insert id="insertPoBatch" parameterType="java.util.List">
+        insert into ly_mw_warning_subscription(
+        id,
+        enable,
+        operator_id,
+        operation_time,
+        remark
+        )
+        (
+        <foreach collection="list" item="row" index="index" separator="union all">
+            (select
+            #{row.id, jdbcType=BIGINT},
+            #{row.enable, jdbcType=VARCHAR},
+            #{row.operator_id, jdbcType=VARCHAR},
+            #{row.operation_time, jdbcType=DATE},
+            #{row.remark, jdbcType=VARCHAR}
+            from dual)
+        </foreach>
+        )
+    </insert>
+
+
+    <!--  批量新增集合  -->
+    <insert id="insertPoBatchContent" parameterType="java.util.List">
+        insert into ly_mw_warning_subscription_content(
+        id,
+        subscription_id,
+        enable,
+        subscribe_type,
+        subscribe_content,
+        operator_id,
+        operation_time,
+        remark
+        )
+        values
+
+        <foreach collection="list" item="row" index="index" separator=",">
+            (
+            #{row.id, jdbcType=BIGINT},
+            #{row.subscriptionId, jdbcType=VARCHAR},
+            #{row.enable, jdbcType=VARCHAR},
+            #{row.subscribeType, jdbcType=VARCHAR},
+            #{row.subscribeContent, jdbcType=VARCHAR},
+            #{row.operatorId, jdbcType=VARCHAR},
+            #{row.operationTime, jdbcType=DATE},
+            #{row.remark, jdbcType=VARCHAR}
+            )
+        </foreach>
+
+    </insert>
+
+    <!--  批量新增集合  -->
+    <insert id="insertPoBatchObject" parameterType="java.util.List">
+        insert into ly_mw_warning_subscription_object(
+        id,
+        subscription_id,
+        object_department,
+        object_user,
+        operator_id,
+        operation_time,
+        remark
+        )
+        values
+
+        <foreach collection="list" item="row" index="index" separator=",">
+            (
+            #{row.id, jdbcType=BIGINT},
+            #{row.subscriptionId, jdbcType=VARCHAR},
+            #{row.objectDepartment, jdbcType=VARCHAR},
+            #{row.objectUser, jdbcType=VARCHAR},
+            #{row.operatorId, jdbcType=VARCHAR},
+            #{row.operationTime, jdbcType=DATE},
+            #{row.remark, jdbcType=VARCHAR}
+            )
+        </foreach>
+
+    </insert>
+    <!-- 以下写更新方法 -->
+    <update id="enable">
+        update ly_mw_warning_subscription_content
+        set enable = #{status}
+        <where>
+            <if test="id != null and id != ''">
+                subscription_id = #{id}
+            </if>
+            <if test="id != null and id != ''">
+                and subscribe_type = #{type}
+            </if>
+        </where>
+    </update>
+
+    <update id="updataSubMethod">
+        update ly_mw_warning_subscription_method
+        set enable_content = #{dto.enableContent}
+        <if test="dto.levelId != null and dto.levelId != ''">
+            where level_id = #{dto.levelId}
+        </if>
+    </update>
+
+    <!-- 以下写删除方法 -->
+    <delete id="delContentById" >
+        delete from ly_mw_warning_subscription_content
+        where  subscription_id = #{subId}
+    </delete>
+
+    <delete id="delUserById" >
+        delete from ly_mw_warning_subscription_object
+        where  subscription_id = #{subId}
+    </delete>
+    <select id="selectByIdAndType"  resultType="com.ly.cloud.backup.po.WarningSubscriptionContentPo">
+        select * from ly_mw_warning_subscription_content a where a.subscription_id = #{id} and a.subscribe_type = #{type}
+    </select>
+
+    <select id="selectAlllevelId" resultType="string">
+        select level_id from ly_mw_warning_subscription_method
+    </select>
+</mapper>

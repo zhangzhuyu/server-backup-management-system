@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.auth.mapper.SystemRoleMapper">
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.auth.po.SystemRolePo">
+        <id column="role_id" property="roleId" jdbcType="BIGINT" />
+        <result column="role_name" property="roleName" jdbcType="VARCHAR" />
+        <result column="role_key" property="roleKey" jdbcType="VARCHAR" />
+        <result column="role_sort" property="roleSort" jdbcType="INTEGER" />
+        <result column="data_scope" property="dataScope" jdbcType="VARCHAR" />
+        <result column="menu_check_strictly" property="menuCheckStrictly" jdbcType="INTEGER" />
+        <result column="dept_check_strictly" property="deptCheckStrictly" jdbcType="INTEGER" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="del_flag" property="delFlag" jdbcType="VARCHAR" />
+        <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		role_id,
+		role_name,
+		role_key,
+		role_sort,
+		data_scope,
+		menu_check_strictly,
+		dept_check_strictly,
+		status,
+		del_flag,
+		create_by,
+		create_time,
+		update_by,
+		update_time,
+		remark
+    </sql>
+
+    <resultMap id="SystemRoleMap"
+               type="com.ly.cloud.auth.vo.SystemRoleVo" extends="BaseResultMap">
+
+        <collection column="{id=role_id }" property="userIds" select="selectAllUserId" />
+    </resultMap>
+
+
+    <!-- 根据角色Id查询用户Id集合 -->
+    <select id="selectAllUserId" resultType="string">
+        select
+            user_id
+        from ly_sys_user_role
+        where
+            role_id = #{id,jdbcType=BIGINT}
+        order by
+        id desc
+    </select>
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="SystemRoleMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_role
+        where role_id = #{roleId,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="SystemRoleMap"
+            parameterType="com.ly.cloud.auth.dto.SystemRoleDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_role
+        <where>
+            <if test="dto.roleId != null and dto.roleId != '' ">
+                and  role_id = #{dto.roleId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.roleName != null and dto.roleName != '' ">
+                and  role_name like concat('%', #{dto.roleName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="list != null and list.size() > 0">
+                and status in
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by
+        role_sort asc,
+        create_time desc,
+        role_id desc
+    </select>
+
+    <!-- 根据角色名称查询角色Id -->
+    <select id="selectRoleIdByRoleName" parameterType="String" resultType="Long">
+        select
+            role_id
+        from ly_sys_role
+        where
+            role_name = #{roleName,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 查询所有角色名称 -->
+    <select id="selectRoleNameAll" resultType="String">
+        select role_name
+        from ly_sys_role
+    </select>
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.MessageManagementMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.MessageManagementPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="title" property="title" jdbcType="VARCHAR" />
+        <result column="description" property="description" jdbcType="VARCHAR" />
+        <result column="message_type" property="message_type" jdbcType="VARCHAR" />
+        <result column="emergency_degree" property="emergency_degree" jdbcType="VARCHAR" />
+        <result column="executing_status" property="executing_status" jdbcType="VARCHAR" />
+        <result column="executing_time" property="executing_time" jdbcType="DATE" />
+        <result column="operator_id" property="operator_id" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operation_time" jdbcType="DATE" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		title,
+		description,
+		message_type,
+		emergency_degree,
+		executing_status,
+		executing_time,
+		operator_id,
+		operation_time,
+		remark
+    </sql>
+    
+    <resultMap id="MessageManagementMap"
+               type="com.ly.cloud.backup.vo.MessageManagementVo" extends="BaseResultMap">
+        
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="MessageManagementMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_ms_message_management
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="MessageManagementMap"
+        parameterType="com.ly.cloud.backup.dto.MessageManagementDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_ms_message_management
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.title != null and dto.title != '' ">
+          and  TITLE = #{dto.title,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.description != null and dto.description != '' ">
+          and  DESCRIPTION = #{dto.description,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.message_type != null and dto.message_type != '' ">
+          and  MESSAGE_TYPE = #{dto.message_type,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.emergency_degree != null and dto.emergency_degree != '' ">
+          and  EMERGENCY_DEGREE = #{dto.emergency_degree,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.executing_status != null and dto.executing_status != '' ">
+          and  EXECUTING_STATUS = #{dto.executing_status,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.executing_time != null and dto.executing_time != '' ">
+          and  EXECUTING_TIME = #{dto.executing_time,jdbcType=DATE}
+        </if>
+        <if test="dto.operator_id != null and dto.operator_id != '' ">
+          and  OPERATOR_ID = #{dto.operator_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operation_time != null and dto.operation_time != '' ">
+          and  OPERATION_TIME = #{dto.operation_time,jdbcType=DATE}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+
+</mapper>

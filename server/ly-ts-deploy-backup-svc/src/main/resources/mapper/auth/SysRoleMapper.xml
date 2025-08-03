@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.auth.mapper.SysRoleMapper">
+
+    <resultMap type="com.ly.cloud.auth.po.SysRole" id="SysRoleResult">
+        <id property="role_id" column="role_id"/>
+        <result property="role_name" column="role_name"/>
+        <result property="role_key" column="role_key"/>
+        <result property="role_sort" column="role_sort"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectRoleVo">
+	    select distinct r.role_id, r.role_name, r.role_key, r.role_sort,
+                r.status,  r.remark
+			from ly_sys_role r
+         left join ly_sys_user_role ur on ur.role_id = r.role_id
+         left join ly_sys_user u on u.user_id = ur.user_id
+    </sql>
+
+    <select id="selectRolePage" parameterType="com.ly.cloud.auth.po.SysRole" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+        <where>
+            <if test="role.role_id != null and role.role_id != 0">
+                AND r.role_id = #{role.role_id}
+            </if>
+            <if test="role.role_name != null and role.role_name != ''">
+                AND r.role_name like concat('%', #{role.role_name}, '%')
+            </if>
+            <if test="role.status != null and role.status != ''">
+                AND r.status = #{role.status}
+            </if>
+            <if test="role.role_key != null and role.role_key != ''">
+                AND r.role_key like concat('%', #{role.role_key}, '%')
+            </if>
+        </where>
+        order by r.role_sort
+    </select>
+
+    <select id="selectRoleList" parameterType="com.ly.cloud.auth.po.SysRole" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+        <where>
+            <if test="role_id != null and role_id != 0">
+                AND r.role_id = #{role_id}
+            </if>
+            <if test="role_name != null and role_name != ''">
+                AND r.role_name like concat('%', #{role_name}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND r.status = #{status}
+            </if>
+            <if test="role_key != null and role_key != ''">
+                AND r.role_key like concat('%', #{role_key}, '%')
+            </if>
+        </where>
+        order by r.role_sort
+    </select>
+
+    <select id="selectRolePermissionByuser_id" parameterType="Long" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <select id="selectRoleAll" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+    </select>
+
+    <select id="selectRoleListByuser_id" parameterType="Long" resultType="Long">
+		select r.role_id
+        from ly_sys_role r
+	        left join ly_sys_user_role ur on ur.role_id = r.role_id
+	        left join ly_sys_user u on u.user_id = ur.user_id
+	    where u.user_id = #{userId}
+	</select>
+
+    <select id="selectRoleById" parameterType="Long" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+        where r.role_id = #{role_id}
+    </select>
+
+    <select id="selectRolesByUserName" parameterType="String" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+        WHERE  u.user_name = #{userName}
+    </select>
+
+    <select id="checkRoleNameUnique" parameterType="String" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+        where r.role_name=#{role_name} limit 1
+    </select>
+
+    <select id="checkRoleKeyUnique" parameterType="String" resultMap="SysRoleResult">
+        <include refid="selectRoleVo"/>
+        where r.role_key=#{role_key} limit 1
+    </select>
+
+
+    <update id="updateRole" parameterType="com.ly.cloud.auth.po.SysRole">
+        update ly_sys_role
+        <set>
+            <if test="role_name != null and role_name != ''">role_name = #{role_name},</if>
+            <if test="role_key != null and role_key != ''">role_key = #{role_key},</if>
+            <if test="role_sort != null and role_sort != ''">role_sort = #{role_sort},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where role_id = #{role_id}
+    </update>
+
+    <delete id="deleteRoleById" parameterType="Long">
+		delete from ly_sys_role  where role_id = #{role_id}
+ 	</delete>
+
+    <delete id="deleteRoleByIds" parameterType="Long">
+        delete from ly_sys_role  where role_id in
+        <foreach collection="array" item="role_id" open="(" separator="," close=")">
+            #{role_id}
+        </foreach>
+    </delete>
+
+</mapper> 

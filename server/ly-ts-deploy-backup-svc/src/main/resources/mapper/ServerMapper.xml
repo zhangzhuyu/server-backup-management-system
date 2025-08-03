@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.ServerMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.ServerPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="hostname" property="hostName" jdbcType="VARCHAR" />
+        <result column="business_worker" property="businessWorker" jdbcType="VARCHAR" />
+        <result column="ipv4" property="ipv4" jdbcType="VARCHAR" />
+        <result column="ipv6" property="ipv6" jdbcType="VARCHAR" />
+        <result column="server_type" property="serverType" jdbcType="VARCHAR" />
+        <result column="port" property="port" jdbcType="VARCHAR" />
+        <result column="user" property="user" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="whether_monitoring" property="whetherMonitoring" jdbcType="VARCHAR" />
+        <result column="affiliated_company" property="affiliatedCompany" jdbcType="BIGINT" />
+        <result column="health_status" property="healthStatus" jdbcType="VARCHAR" />
+        <result column="firewall_state" property="firewallState" jdbcType="VARCHAR" />
+        <result column="system_type" property="systemType" jdbcType="VARCHAR" />
+        <result column="test_status" property="testStatus" jdbcType="VARCHAR" />
+        <result column="configuration" property="configuration" jdbcType="VARCHAR" />
+        <result column="agent_status" property="configuration" jdbcType="VARCHAR" />
+        <result column="oracle_user" property="oracleUser" jdbcType="VARCHAR" />
+        <result column="oracle_password" property="oraclePassword" jdbcType="VARCHAR" />
+        <result column="oracle_backup_path" property="oracleBackupPath" jdbcType="VARCHAR" />
+        <result column="mongodb_backup_path" property="mongodbBackupPath" jdbcType="VARCHAR" />
+        <result column="mysql_backup_path" property="mysqlBackupPath" jdbcType="VARCHAR" />
+        <result column="tidb_backup_path" property="tidbBackupPath" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+        <result column="whether_outer_net" property="whetherOuterNet" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		hostname,
+		business_worker,
+		ipv4,
+		ipv6,
+		server_type,
+		port,
+		user,
+		password,
+		whether_monitoring,
+		affiliated_company,
+		health_status,
+		firewall_state,
+		system_type,
+		test_status,
+		configuration,
+		agent_status,
+		oracle_user,
+		oracle_password,
+		oracle_backup_path,
+		mongodb_backup_path,
+		mysql_backup_path,
+		tidb_backup_path,
+		operator_id,
+		operation_time,
+		remark,
+		serial_number,
+		whether_outer_net
+    </sql>
+
+    <resultMap id="ServerMap"
+               type="com.ly.cloud.backup.vo.ServerVo" extends="BaseResultMap">
+        <result column="affiliatedCompanyName" property="affiliatedCompanyName" jdbcType="VARCHAR" />
+
+    </resultMap>
+
+
+    <!-- 添加 -->
+<!--    <insert id="insert"-->
+<!--            parameterType="com.ly.cloud.backup.po.ServerPo">-->
+<!--        insert into ly_rm_server (-->
+<!--		id,-->
+<!--		name,-->
+<!--		hostname,-->
+<!--		business_worker,-->
+<!--		ipv4,-->
+<!--		ipv6,-->
+<!--		server_type,-->
+<!--		port,-->
+<!--		user,-->
+<!--		password,-->
+<!--		whether_monitoring,-->
+<!--		whether_outer_net,-->
+<!--		affiliated_company,-->
+<!--		health_status,-->
+<!--		firewall_state,-->
+<!--		system_type,-->
+<!--		test_status,-->
+<!--		configuration,-->
+<!--		agent_status,-->
+<!--		operator_id,-->
+<!--		operation_time,-->
+<!--		remark,-->
+<!--		serial_number,-->
+<!--        oracle_user,-->
+<!--        oracle_password,-->
+<!--        oracle_backup_path,-->
+<!--        mongodb_backup_path,-->
+<!--        mysql_backup_path,-->
+<!--        tidb_backup_path-->
+<!--        )-->
+<!--        values (-->
+<!--		#{id,jdbcType=BIGINT},-->
+<!--		#{name,jdbcType=VARCHAR},-->
+<!--		#{hostName,jdbcType=VARCHAR},-->
+<!--		#{businessWorker,jdbcType=VARCHAR},-->
+<!--		#{ipv4,jdbcType=VARCHAR},-->
+<!--		#{ipv6,jdbcType=VARCHAR},-->
+<!--		#{serverType,jdbcType=VARCHAR},-->
+<!--		#{port,jdbcType=VARCHAR},-->
+<!--		#{user,jdbcType=VARCHAR},-->
+<!--		#{password,jdbcType=VARCHAR},-->
+<!--		#{whetherMonitoring,jdbcType=VARCHAR},-->
+<!--		#{whetherOuterNet,jdbcType=VARCHAR},-->
+<!--		#{affiliatedCompany,jdbcType=BIGINT},-->
+<!--		#{healthStatus,jdbcType=VARCHAR},-->
+<!--		#{firewallState,jdbcType=VARCHAR},-->
+<!--		#{systemType,jdbcType=VARCHAR},-->
+<!--		#{testStatus,jdbcType=VARCHAR},-->
+<!--		#{configuration,jdbcType=VARCHAR},-->
+<!--		#{agentStatus,jdbcType=VARCHAR},-->
+<!--		#{oracleUser,jdbcType=VARCHAR},-->
+<!--		#{oraclePassword,jdbcType=VARCHAR},-->
+<!--		#{oracleBackupPath,jdbcType=VARCHAR},-->
+<!--		#{operatorId,jdbcType=VARCHAR},-->
+<!--		#{operationTime,jdbcType=DATE},-->
+<!--		#{remark,jdbcType=VARCHAR},-->
+<!--		#{serialNumber,jdbcType=VARCHAR},-->
+<!--        #{oracleUser,jdbcType=VARCHAR},-->
+<!--        #{oraclePassword,jdbcType=VARCHAR},-->
+<!--        #{oracleBackupPath,jdbcType=VARCHAR},-->
+<!--        #{mongodbBackupPath,jdbcType=VARCHAR},-->
+<!--        #{mysqlBackupPath,jdbcType=VARCHAR},-->
+<!--        #{tidbBackupPath,jdbcType=VARCHAR}-->
+<!--        )-->
+<!--    </insert>-->
+
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="ServerMap"
+        parameterType="com.ly.cloud.backup.dto.ServerDto">
+        select
+            server.*,
+            company.name affiliatedCompanyName
+        from ly_rm_server server
+        left join ly_sm_company company on company.id=server.affiliated_company
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  server.ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.name != null and dto.name != '' ">
+          and  server.NAME = #{dto.name,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.hostName != null and dto.hostName != '' ">
+          and  server.hostname = #{dto.hostName,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.businessWorker != null and dto.businessWorker != '' ">
+          and  server.BUSINESS_WORKER = #{dto.businessWorker,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.ipv4 != null and dto.ipv4 != '' ">
+          and  server.IPV4 = #{dto.ipv4,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.ipv6 != null and dto.ipv6 != '' ">
+          and  server.IPV6 = #{dto.ipv6,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.serverType != null and dto.serverType != '' ">
+          and  server.SERVER_TYPE = #{dto.serverType,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.port != null and dto.port != '' ">
+          and  server.PORT = #{dto.port,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.user != null and dto.user != '' ">
+          and  server.USER = #{dto.user,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.password != null and dto.password != '' ">
+          and  server.PASSWORD = #{dto.password,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.whetherMonitoring != null and dto.whetherMonitoring != '' ">
+          and  server.WHETHER_MONITORING = #{dto.whetherMonitoring,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.whetherOuterNet != null and dto.whetherOuterNet != '' ">
+          and  server.whether_outer_net = #{dto.whetherOuterNet,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.affiliatedCompany != null and dto.affiliatedCompany != '' ">
+          and  server.affiliated_company = #{dto.affiliatedCompany,jdbcType=BIGINT}
+        </if>
+        <if test="dto.healthStatus != null and dto.healthStatus != '' ">
+          and  server.HEALTH_STATUS = #{dto.healthStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.firewallState != null and dto.firewallState != '' ">
+          and  server.firewall_state = #{dto.firewallState,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.systemType != null and dto.systemType != '' ">
+          and  server.system_type = #{dto.systemType,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.testStatus != null and dto.testStatus != '' ">
+          and  server.test_status = #{dto.testStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operatorId != null and dto.operatorId != '' ">
+          and  server.OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operationTime != null and dto.operationTime != '' ">
+          and  server.OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  server.REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.serialNumber != null and dto.serialNumber != '' ">
+          and  server.serial_number = #{dto.serialNumber,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.content != null and dto.content != '' ">
+          and ( server.NAME like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')  or IPV4 like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+        </if>
+        <if test="dto.healthStatusList != null ">
+            and server.health_status in
+            <foreach collection="dto.healthStatusList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dto.testStatusList != null ">
+            and server.test_status in
+            <foreach collection="dto.testStatusList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        </where>
+        order by
+<!--            server.serial_number+0,-->
+            server.OPERATION_TIME desc,
+            server.ID desc
+    </select>
+
+    <!-- 查询 -->
+    <select id="selectByAll" resultMap="ServerMap"
+            parameterType="com.ly.cloud.backup.dto.ServerDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_server
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  ID = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.name != null and dto.name != '' ">
+                and  NAME = #{dto.name,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.hostName != null and dto.hostName != '' ">
+                and  hostname = #{dto.hostName,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.businessWorker != null and dto.businessWorker != '' ">
+                and  BUSINESS_WORKER = #{dto.businessWorker,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.ipv4 != null and dto.ipv4 != '' ">
+                and  IPV4 = #{dto.ipv4,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.ipv6 != null and dto.ipv6 != '' ">
+                and  IPV6 = #{dto.ipv6,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.serverType != null and dto.serverType != '' ">
+                and  SERVER_TYPE = #{dto.serverType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.port != null and dto.port != '' ">
+                and  PORT = #{dto.port,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.user != null and dto.user != '' ">
+                and  USER = #{dto.user,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.password != null and dto.password != '' ">
+                and  PASSWORD = #{dto.password,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.whetherMonitoring != null and dto.whetherMonitoring != '' ">
+                and  WHETHER_MONITORING = #{dto.whetherMonitoring,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.whetherOuterNet != null and dto.whetherOuterNet != '' ">
+                and  whether_outer_net = #{dto.whetherOuterNet,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.affiliatedCompany != null and dto.affiliatedCompany != '' ">
+                and  affiliated_company = #{dto.affiliatedCompany,jdbcType=BIGINT}
+            </if>
+            <if test="dto.healthStatus != null and dto.healthStatus != '' ">
+                and  HEALTH_STATUS = #{dto.healthStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.firewallState != null and dto.firewallState != '' ">
+                and  firewall_state = #{dto.firewallState,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.systemType != null and dto.systemType != '' ">
+                and  system_type = #{dto.systemType,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.testStatus != null and dto.testStatus != '' ">
+                and  test_status = #{dto.testStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operatorId != null and dto.operatorId != '' ">
+                and  OPERATOR_ID = #{dto.operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.operationTime != null and dto.operationTime != '' ">
+                and  OPERATION_TIME = #{dto.operationTime,jdbcType=DATE}
+            </if>
+            <if test="dto.remark != null and dto.remark != '' ">
+                and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.serialNumber != null and dto.serialNumber != '' ">
+                and  serial_number = #{dto.serialNumber,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and NAME like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')  or IPV4 like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询所有数据 -->
+    <select id="getAllData" resultType="com.ly.cloud.backup.vo.ServerVo">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_server
+    </select>
+
+    <select id="selectById" resultType="com.ly.cloud.backup.vo.ServerVo">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_server
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <update id="updateStatusErr" parameterType="java.util.List">
+        update ly_rm_server
+        <set>
+            health_status = 0
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </update>
+
+    <update id="updateStatusSuccess" parameterType="java.util.List">
+        update ly_rm_server
+        <set>
+            health_status = 1
+        </set>
+        <if test="list != null and list.size() > 0">
+            where id not in
+            <foreach item="item" collection="list" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateStatusSucc" parameterType="java.util.List">
+        update ly_rm_server
+        <set>
+            health_status = 1
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

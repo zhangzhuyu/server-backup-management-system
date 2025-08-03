@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.BackupManagementMapper">
+
+    <select id="selectBackupManagementByBackupWayList" resultType="com.ly.cloud.backup.vo.BackupManagementVo">
+        SELECT
+            m.id id,
+            m.backup_way backupWay,
+            m.data_source_type dataSourceType,
+            m.total_method totalMethod,
+            m.server_id serverId,
+            m.record_retention_time recordRetentionTime,
+            m.version_retention_number versionRetentionNumber,
+            m.connection_fail_times connectionFailTimes,
+            m.expiration_time expirationTime,
+            s.ipv4 serverUrl
+        FROM ly_db_backup_management m left join ly_rm_server s on m.server_id = s.id
+        <where>
+            <if test="backupWay != null and backupWay != ''">
+                m.backup_way = #{backupWay}
+            </if>
+            <choose>
+                <when test="authDeptId!=null and authDeptId!=''">
+                    and ( m.auth_dept_id regexp #{authDeptId,jdbcType=VARCHAR} or m.auth_dept_id is null )
+                </when>
+                <otherwise>
+                    and ( m.auth_dept_id like '%-1%' or m.auth_dept_id is null )
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+</mapper>

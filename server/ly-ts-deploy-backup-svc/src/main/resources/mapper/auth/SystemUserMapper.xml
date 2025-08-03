@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.auth.mapper.SystemUserMapper">
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.auth.po.SystemUserPo">
+        <id column="user_id" property="userId" jdbcType="BIGINT" />
+        <result column="dept_id" property="deptId" jdbcType="BIGINT" />
+        <result column="user_name" property="userName" jdbcType="VARCHAR" />
+        <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+        <result column="user_type" property="userType" jdbcType="VARCHAR" />
+        <result column="email" property="email" jdbcType="VARCHAR" />
+        <result column="phonenumber" property="phonenumber" jdbcType="VARCHAR" />
+        <result column="sex" property="sex" jdbcType="VARCHAR" />
+        <result column="avatar" property="avatar" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="del_flag" property="delFlag" jdbcType="VARCHAR" />
+        <result column="ding_talk" property="dingTalk" jdbcType="VARCHAR" />
+        <result column="password_time" property="passwordTime" jdbcType="TIMESTAMP" />
+        <result column="login_ip" property="loginIp" jdbcType="VARCHAR" />
+        <result column="login_date" property="loginDate" jdbcType="TIMESTAMP" />
+        <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		user_id,
+		dept_id,
+		user_name,
+		nick_name,
+		user_type,
+		email,
+		phonenumber,
+		sex,
+		avatar,
+		password,
+		status,
+		del_flag,
+		ding_talk,
+		password_time,
+		login_ip,
+		login_date,
+		create_by,
+		create_time,
+		update_by,
+		update_time,
+		remark
+    </sql>
+
+    <resultMap id="SystemUserMap"
+               type="com.ly.cloud.auth.vo.SystemUserVo" extends="BaseResultMap">
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+        <result column="role_id" property="roleId" jdbcType="VARCHAR" />
+        <result column="role_name" property="roleName" jdbcType="VARCHAR" />
+
+    </resultMap>
+
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="SystemUserMap"
+            parameterType="java.lang.Long">
+        select
+            user.*,
+            dept.dept_name
+        from ly_sys_user user
+        left join ly_sys_dept dept on dept.dept_id = user.dept_id
+        where user_id = #{userId,jdbcType=BIGINT}
+        order by
+            user.user_sort asc,
+            user.user_type desc,
+            user.create_time desc,
+            user.user_id desc
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="SystemUserMap"
+            parameterType="com.ly.cloud.auth.dto.SystemUserDto">
+        select
+            sysuser.*,
+            dept.dept_name,
+            t.role_id,
+            t.role_name
+        from ly_sys_user sysuser
+        left join ly_sys_dept dept on dept.dept_id = sysuser.dept_id
+        LEFT JOIN
+        (
+        SELECT
+            userRole.user_id,
+            group_concat(userRole.role_id) role_id,
+            group_concat(srole.role_name) role_name
+        FROM  ly_sys_user_role userRole
+        LEFT JOIN ly_sys_role srole ON userRole.role_id = srole.role_id
+        GROUP BY
+            userRole.user_id
+        )t ON t.user_id = sysuser.user_id
+        <where>
+            <if test="dto.userId != null and dto.userId != '' ">
+                and  sysuser.user_id = #{dto.userId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.deptId != null and dto.deptId != '' and childDeptIdList.size()>0 ">
+                and  sysuser.dept_id in
+                <foreach collection="childDeptIdList" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and ( sysuser.nick_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') or sysuser.user_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') or sysuser.user_id like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+            </if>
+            <if test="dto.status != null and dto.status != '' and (dto.status == '0'.toString() or dto.status == '1'.toString())">
+                and sysuser.status = #{dto.status,jdbcType=BIGINT}
+            </if>
+            <if test="dto.status != null and dto.status != '' and dto.status == '0,1'.toString()">
+                and sysuser.status in ('0','1')
+            </if>
+        </where>
+        order by
+            sysuser.user_sort asc,
+            sysuser.user_type desc,
+            sysuser.create_time desc,
+            sysuser.user_id desc
+    </select>
+
+
+    <!-- 查询 -->
+    <select id="selectBydto" resultMap="SystemUserMap"
+            parameterType="com.ly.cloud.auth.dto.SystemUserDto">
+        select
+        sysuser.*,
+        dept.dept_name,
+        userRole.role_id,
+        srole.role_name
+        from ly_sys_user sysuser
+        left join ly_sys_dept dept on dept.dept_id = sysuser.dept_id
+        left join ly_sys_user_role userRole on userRole.user_id = sysuser.user_id
+        left join ly_sys_role srole on userRole.role_id = srole.role_id
+        <where>
+            <if test="dto.userId != null and dto.userId != '' ">
+                and  sysuser.user_id = #{dto.userId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.deptId != null and dto.deptId != '' ">
+                and  sysuser.dept_id = #{dto.deptId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.userName != null and dto.userName != '' ">
+                and  sysuser.user_name = #{dto.userName,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and ( sysuser.nick_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') or sysuser.user_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') or sysuser.user_id like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+            </if>
+        </where>
+        order by
+            sysuser.user_sort asc,
+            sysuser.user_type desc,
+            sysuser.create_time desc,
+            sysuser.user_id desc
+    </select>
+
+    <!-- 查询所有用户数据 -->
+    <select id="selectByDeptIds" resultMap="SystemUserMap">
+        select
+        sysuser.*,
+        dept.dept_name,
+        userRole.role_id,
+        srole.role_name
+        from ly_sys_user sysuser
+        left join ly_sys_dept dept on dept.dept_id = sysuser.dept_id
+        left join ly_sys_user_role userRole on userRole.user_id = sysuser.user_id
+        left join ly_sys_role srole on userRole.role_id = srole.role_id
+        <where>
+            <if test="list != null and list.size()>0 ">
+                and  sysuser.dept_id in
+                <foreach collection="list" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by
+            sysuser.user_sort asc,
+            sysuser.user_type desc,
+            sysuser.create_time desc,
+            sysuser.user_id desc
+    </select>
+
+    <!-- 根据角色Id查询该角色下用户数据 -->
+    <select id="selectUsersByRoleId" resultMap="SystemUserMap">
+        select
+            sysuser.*
+        from ly_sys_user sysuser
+        left join ly_sys_user_role userRole on userRole.user_id = sysuser.user_id
+        where userRole.role_id = #{roleId,jdbcType=BIGINT}
+    </select>
+
+    <!-- 按主键集合查询 -->
+    <select id="queryByIds" resultMap="SystemUserMap"
+            parameterType="java.util.List">
+        select
+            user.*,
+            dept.dept_name,
+            srole.role_name
+        from ly_sys_user user
+        left join ly_sys_dept dept on dept.dept_id = user.dept_id
+        left join ly_sys_user_role userRole on userRole.user_id = user.user_id
+        left join ly_sys_role srole on srole.role_id = userRole.role_id
+        <where>
+            <if test="list != null and list.size()>0">
+                and user.user_id in
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by
+            user.user_sort asc,
+            user.user_type desc,
+            user.create_time desc,
+            user.user_id desc
+    </select>
+</mapper>

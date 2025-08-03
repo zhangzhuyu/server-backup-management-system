@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.auth.mapper.SystemMenuMapper">
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.auth.po.SystemMenuPo">
+        <id column="menu_id" property="menuId" jdbcType="BIGINT" />
+        <result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+        <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+        <result column="order_num" property="orderNum" jdbcType="INTEGER" />
+        <result column="path" property="path" jdbcType="INTEGER" />
+        <result column="component" property="component" jdbcType="VARCHAR" />
+        <result column="query" property="query" jdbcType="VARCHAR" />
+        <result column="is_frame" property="isFrame" jdbcType="INTEGER" />
+        <result column="is_cache" property="isCache" jdbcType="INTEGER" />
+        <result column="menu_type" property="menuType" jdbcType="VARCHAR" />
+        <result column="visible" property="visible" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="perms" property="perms" jdbcType="VARCHAR" />
+        <result column="icon" property="icon" jdbcType="VARCHAR" />
+        <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		menu_id,
+		menu_name,
+		parent_id,
+		order_num,
+		path,
+		component,
+		query,
+		is_frame,
+		is_cache,
+		menu_type,
+		visible,
+		status,
+		perms,
+		create_by,
+		create_time,
+		update_by,
+		update_time,
+		remark
+    </sql>
+
+    <resultMap id="SystemMenuMap"
+               type="com.ly.cloud.auth.vo.SystemMenuVo" extends="BaseResultMap">
+        <result column="parentName" property="parentName" jdbcType="VARCHAR" />
+
+    </resultMap>
+
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="SystemMenuMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_menu
+        where menu_id = #{menu_id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="SystemMenuMap"
+            parameterType="com.ly.cloud.auth.dto.SystemMenuDto">
+        select
+            menus.*,
+            parentMenus.menu_name parentName
+        from ly_sys_menu menus
+        left join ly_sys_menu parentMenus on parentMenus.menu_id = menus.parent_id
+        <where>
+            <if test="dto.menuId != null and dto.menuId != '' ">
+                and  menus.menu_id = #{dto.menuId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.parentId != null and dto.parentId != '' ">
+                and  menus.parent_id = #{dto.parentId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.menuName != null and dto.menuName != '' ">
+                and  menus.menu_name like concat('%', #{dto.menuName,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+        menus.parent_id desc,
+        menus.order_num asc,
+        menus.create_time desc,
+        menus.menu_id desc
+    </select>
+
+
+    <resultMap id="SystemMenuAllTreeMap"
+               type="com.ly.cloud.auth.vo.SystemMenuVo" extends="BaseResultMap">
+        <result column="parentName" property="parentName" jdbcType="VARCHAR" />
+        <result column="content" property="content" jdbcType="VARCHAR" />
+
+        <collection column="{id=menu_id }" property="children" select="querySystemMenuAllTree" />
+    </resultMap>
+
+    <!-- 查询 树形结构 -->
+    <select id="queryTreeSystemMenuAll" resultMap="SystemMenuAllTreeMap">
+        select
+            menus.*
+        from ly_sys_menu menus
+        where
+            menus.parent_id = -1
+            <if test="dto.content != null and dto.content != '' ">
+                and  menus.menu_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+            </if>
+        order by
+            menus.order_num asc,
+            menus.menu_id
+    </select>
+
+    <select id="querySystemMenuAllTree" resultMap="SystemMenuAllTreeMap">
+        select
+        menus.*
+        from ly_sys_menu menus
+        where
+            menus.parent_id=#{id,jdbcType=BIGINT}
+        order by
+        menus.order_num asc,
+        menus.create_time desc,
+        menus.menu_id desc
+    </select>
+
+    <!-- 根据主键查询所有子菜单Id(包含当前菜单) -->
+    <select id="querySubmenusById" resultMap="SystemMenuAllTreeMap">
+        SELECT
+            t3.menu_id
+        FROM
+            (
+                SELECT
+                    t1.menu_id,
+                    IF (
+                            FIND_IN_SET(t1.parent_id, @pids) > 0,
+                            @pids := CONCAT(@pids, ',', t1.menu_id),
+                            0
+                        ) AS ischild
+                FROM
+                    (
+                        SELECT
+                            t.menu_id,
+                            t.parent_id
+                        FROM
+                            ly_sys_menu t
+                    ) t1,
+                    (
+                        SELECT
+                            @pids := #{id,jdbcType=BIGINT}
+                    ) t2
+            ) t3
+        WHERE
+            t3.ischild != 0 OR t3.menu_id = #{id,jdbcType=BIGINT}
+        ORDER BY t3.menu_id asc
+    </select>
+
+    <select id="queryByIds" resultMap="SystemMenuMap" parameterType="java.util.List">
+        select
+        menus.*
+        from ly_sys_menu menus
+        <where>
+            <if test="list != null and list.size()>0">
+                and menus.menu_id in
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                and menus.status in
+                <foreach collection="statusList" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="content != null and content != '' ">
+                and menus.menu_name like concat('%', #{content,jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by
+        menus.order_num asc,
+        menus.create_time desc,
+        menus.menu_id desc
+    </select>
+
+    <!-- 查询 树形结构 -->
+    <select id="queryAll" resultMap="SystemMenuAllTreeMap">
+        select
+        menus.*
+        from ly_sys_menu menus
+        where
+        menus.parent_id = -1
+        order by
+        menus.order_num asc,
+        menus.menu_id
+    </select>
+
+    <!-- 根据角色Id查询菜单权限 -->
+    <select id="selectByRoleId" resultMap="SystemMenuMap">
+        select
+            menus.*
+        from ly_sys_menu menus
+        left join ly_sys_role_menu rm on menus.menu_id = rm.menu_id
+        <where>
+            <if test="id != null and id != '' ">
+                and  rm.role_id = #{id,jdbcType=BIGINT}
+            </if>
+        </where>
+        order by
+            menus.order_num asc,
+            menus.menu_id
+    </select>
+</mapper>

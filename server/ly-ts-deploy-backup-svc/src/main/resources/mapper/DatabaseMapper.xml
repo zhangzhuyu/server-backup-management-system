@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.DatabaseMapper">
+
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.backup.po.DatabasePo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="source_type" property="sourceType" jdbcType="VARCHAR" />
+        <result column="port" property="port" jdbcType="VARCHAR" />
+        <result column="ipv4" property="ipv4" jdbcType="VARCHAR" />
+        <result column="adapter_id" property="adapterId" jdbcType="VARCHAR" />
+        <result column="database_name" property="databaseName" jdbcType="VARCHAR" />
+        <result column="driver" property="driver" jdbcType="VARCHAR" />
+        <result column="user" property="user" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="password_expire_time" property="passwordExpireTime" jdbcType="VARCHAR" />
+        <result column="url" property="url" jdbcType="VARCHAR" />
+        <result column="whether_check" property="whetherCheck" jdbcType="VARCHAR" />
+        <result column="rule_id" property="ruleId" jdbcType="VARCHAR" />
+        <result column="whether_monitoring" property="whetherMonitoring" jdbcType="VARCHAR" />
+        <result column="test_status" property="testStatus" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="serial_number" property="serialNumber" jdbcType="INTEGER" />
+        <result column="health_status" property="healthStatus" jdbcType="VARCHAR" />
+        <result column="affiliated_company" property="affiliatedCompany" jdbcType="BIGINT" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		source_type,
+		port,
+		ipv4,
+		adapter_id,
+		database_name,
+		driver,
+		user,
+		password,
+		url,
+		whether_check,
+		rule_id,
+		whether_monitoring,
+		test_status,
+		operation_time,
+		operator_id,
+		remark,
+        serial_number,
+        health_status,
+        affiliated_company
+    </sql>
+
+    <resultMap id="DatabaseMap"
+               type="com.ly.cloud.backup.vo.DatabaseVo" extends="BaseResultMap">
+    </resultMap>
+
+    <!-- 以下写查询方法 -->
+    <!-- 按主键查询 -->
+    <select id="get" resultType="com.ly.cloud.backup.vo.DatabaseVo">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_database
+        where id = #{id}
+    </select>
+    <!-- 查询 -->
+    <select id="selectPageLike" resultType="com.ly.cloud.backup.vo.DatabaseListVo">
+        select
+        id,
+        name as dataSourceName,
+        driver as dataSourceDrive,
+        source_type as sourceType,
+        database_name as dateBaseName,
+        port,
+        user as dataBaseUser,
+        ipv4 as ip,
+        url,
+        test_status as testStatus,
+        operation_time as updateTime,
+        whether_check as whetherCheck,
+        whether_monitoring as whetherMonitoring,
+        serial_number AS serialNumber,
+        health_status AS healthStatus
+        from ly_rm_database
+        <where>
+            <if test="dto.content != null and dto.content != ''">
+                and instr(concat(name, source_type, user), #{dto.content}) > 0
+            </if>
+        </where>
+    </select>
+    <!--  查询所有关联服务器  -->
+    <select id="servers" resultType="com.ly.cloud.backup.vo.ServerVo">
+        select id, name, ipv4 from ly_rm_server order by operation_time desc
+    </select>
+    <!--  查询所有数据库信息  -->
+    <select id="selectAllList" resultType="com.ly.cloud.backup.vo.DatabaseListVo">
+        select
+            id,
+            name as dataSourceName,
+            driver as dataSourceDrive,
+            source_type as sourceType,
+            database_name as dateBaseName,
+            port,
+            user as dataBaseUser,
+            ipv4 as ip,
+            url,
+            password_expire_time passwordExpireTime,
+            test_status as testStatus,
+            operation_time as updateTime,
+            whether_check as whetherCheck,
+            whether_monitoring as whetherMonitoring,
+            serial_number AS serialNumber,
+            health_status AS healthStatus,
+            affiliated_company as affiliatedCompany
+        from ly_rm_database
+        where name is not null
+            and source_type is not null
+            and user is not null
+            and test_status is not null
+        <if test="dto.affiliatedCompany != null and dto.affiliatedCompany != ''">
+            and affiliated_company = #{dto.affiliatedCompany,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.sourceType != null and dto.sourceType != ''">
+            and source_type = #{dto.sourceType,jdbcType=VARCHAR}
+        </if>
+        order by operation_time desc
+    </select>
+    <!--  通过一定参数校验唯一性  -->
+    <select id="checkUniqueness" resultType="java.lang.Integer">
+        select
+            count( id )
+        from
+        ly_rm_database
+        <where>
+<!--            <if test="dto.name != null and dto.name != ''">-->
+<!--                and name = #{dto.name,jdbcType=VARCHAR}-->
+<!--            </if>-->
+<!--            <if test="dto.sourceType != null and dto.sourceType != ''">-->
+<!--                and source_type = #{dto.sourceType,jdbcType=VARCHAR}-->
+<!--            </if>-->
+            <if test="dto.port != null and dto.port != ''">
+                and port = #{dto.port,jdbcType=VARCHAR}
+            </if>
+            <if test="dto.ipv4 != null and dto.ipv4 != ''">
+                and ipv4 = #{dto.ipv4,jdbcType=VARCHAR}
+            </if>
+<!--            <if test="dto.databaseName != null and dto.databaseName != ''">-->
+<!--                and database_name = #{dto.databaseName,jdbcType=VARCHAR}-->
+<!--            </if>-->
+<!--            <if test="dto.driver != null and dto.driver != ''">-->
+<!--                and driver = #{dto.driver,jdbcType=VARCHAR}-->
+<!--            </if>-->
+<!--            <if test="dto.user != null and dto.user != ''">-->
+<!--                and USER = #{dto.user,jdbcType=VARCHAR}-->
+<!--            </if>-->
+<!--            <if test="dto.id != null and dto.id != ''">-->
+<!--                and id != #{dto.id}-->
+<!--            </if>-->
+        </where>
+    </select>
+    <!-- 以下写插入方法 -->
+    <!-- 添加数据库信息表 -->
+    <insert id="insertPo" parameterType="com.ly.cloud.backup.po.DatabasePo">
+        insert into ly_rm_database (
+		id,
+		name,
+		source_type,
+		port,
+		ipv4,
+		adapter_id,
+		database_name,
+		driver,
+		user,
+		password,
+		password_expire_time,
+		url,
+		whether_check,
+		rule_id,
+		whether_monitoring,
+		test_status,
+		operation_time,
+		operator_id,
+		remark,
+        serial_number,
+        health_status
+        )
+        values (
+		#{id,jdbcType=BIGINT},
+		#{name,jdbcType=VARCHAR},
+		#{source_type,jdbcType=VARCHAR},
+		#{port,jdbcType=VARCHAR},
+		#{ipv4,jdbcType=VARCHAR},
+		#{adapter_id,jdbcType=VARCHAR},
+		#{database_name,jdbcType=VARCHAR},
+		#{driver,jdbcType=VARCHAR},
+		#{user,jdbcType=VARCHAR},
+		#{password,jdbcType=VARCHAR},
+		#{passwordExpireTime,jdbcType=VARCHAR},
+		#{url,jdbcType=VARCHAR},
+		#{whether_check,jdbcType=VARCHAR},
+		#{rule_id,jdbcType=VARCHAR},
+		#{whether_monitoring,jdbcType=VARCHAR},
+		#{test_status,jdbcType=VARCHAR},
+		#{operation_time,jdbcType=DATE},
+		#{operator_id,jdbcType=VARCHAR},
+		#{remark,jdbcType=VARCHAR},
+		#{serialNumber,jdbcType=INTEGER}
+		#{healthStatus,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- 以下写更新方法 -->
+    <!-- 更新数据库信息表 -->
+    <update id="updatePo" parameterType="com.ly.cloud.backup.po.DatabasePo">
+        update ly_rm_database
+        <set>
+            <if test="id != null">
+                ID = #{id,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                NAME = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="sourceType != null">
+                SOURCE_TYPE = #{sourceType,jdbcType=VARCHAR},
+            </if>
+            <if test="port != null">
+                PORT = #{port,jdbcType=VARCHAR},
+            </if>
+            <if test="ipv4 != null">
+                IPV4 = #{ipv4,jdbcType=VARCHAR},
+            </if>
+            <if test="adapterId != null">
+                ADAPTER_ID = #{adapterId,jdbcType=VARCHAR},
+            </if>
+            <if test="databaseName != null">
+                DATABASE_NAME = #{databaseName,jdbcType=VARCHAR},
+            </if>
+            <if test="driver != null">
+                DRIVER = #{driver,jdbcType=VARCHAR},
+            </if>
+            <if test="user != null">
+                USER = #{user,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                PASSWORD = #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="passwordExpireTime != null">
+                password_expire_time = #{passwordExpireTime,jdbcType=VARCHAR},
+            </if>
+            <if test="url != null">
+                URL = #{url,jdbcType=VARCHAR},
+            </if>
+            <if test="whetherCheck != null">
+                WHETHER_CHECK = #{whetherCheck,jdbcType=VARCHAR},
+            </if>
+            <if test="ruleId != null">
+                RULE_ID = #{ruleId,jdbcType=VARCHAR},
+            </if>
+            <if test="whetherMonitoring != null">
+                WHETHER_MONITORING = #{whetherMonitoring,jdbcType=VARCHAR},
+            </if>
+            <if test="testStatus != null">
+                TEST_STATUS = #{testStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="operationTime != null">
+                OPERATION_TIME = #{operationTime,jdbcType=DATE},
+            </if>
+            <if test="operatorId != null">
+                OPERATOR_ID = #{operatorId,jdbcType=VARCHAR},
+            </if>
+            <if test="remark != null">
+                REMARK = #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="serialNumber != null">
+                serial_number = #{serialNumber,jdbcType=INTEGER},
+            </if>
+            <if test="healthStatus != null">
+                health_status = #{healthStatus,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateStatusErr" parameterType="java.util.List">
+        update ly_rm_database
+        <set>
+            health_status = 0
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateStatusSucc" parameterType="java.util.List">
+        update ly_rm_database
+        <set>
+            health_status = 1
+        </set>
+        where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!-- 以下写删除方法 -->
+    <!--  批量删除数据  -->
+    <delete id="deleteByMulti">
+        delete from ly_rm_database where id in <foreach collection="list" open="(" separator="," close=")" item="item">#{item}</foreach>
+    </delete>
+</mapper>

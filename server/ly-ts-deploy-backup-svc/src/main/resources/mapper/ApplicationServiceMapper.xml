@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+        namespace="com.ly.cloud.backup.mapper.ApplicationServiceMapper">
+
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.backup.po.ApplicationServicePo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="application_id" property="applicationId" jdbcType="BIGINT"/>
+        <result column="service_id" property="serviceId" jdbcType="BIGINT"/>
+        <result column="deployment_way" property="deploymentWay" jdbcType="VARCHAR"/>
+        <result column="affiliated_company" property="affiliatedCompany" jdbcType="VARCHAR"/>
+        <result column="operation_time" property="operationTime" jdbcType="DATE"/>
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		application_id,
+		service_id,
+		deployment_way,
+		affiliated_company,
+		operation_time,
+		operator_id,
+		remark
+    </sql>
+
+    <resultMap id="ApplicationServiceMap"
+               type="com.ly.cloud.backup.vo.ApplicationServiceVo" extends="BaseResultMap">
+
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="ApplicationServiceMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from ly_rm_application_service
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteByApplicationId" parameterType="java.lang.Long">
+        delete from ly_rm_application_service where application_id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="ApplicationServiceMap"
+            parameterType="com.ly.cloud.backup.dto.ApplicationServiceDto">
+        select
+        <include refid="Base_Column_List"/>
+        from ly_rm_application_service
+        <where>
+            <if test="id != null and id != '' ">
+                and ID = #{id,jdbcType=BIGINT}
+            </if>
+            <if test="applicationId != null and applicationId != '' ">
+                and APPLICATION_ID = #{applicationId,jdbcType=BIGINT}
+            </if>
+            <if test="serviceId != null and serviceId != '' ">
+                and SERVICE_ID = #{serviceId,jdbcType=BIGINT}
+            </if>
+            <if test="deploymentWay != null and deploymentWay != '' ">
+                and DEPLOYMENT_WAY = #{deploymentWay,jdbcType=VARCHAR}
+            </if>
+            <if test="affiliatedCompany != null and affiliatedCompany != '' ">
+                and AFFILIATED_COMPANY = #{affiliatedCompany,jdbcType=VARCHAR}
+            </if>
+            <if test="operationTime != null and operationTime != '' ">
+                and OPERATION_TIME = #{operationTime,jdbcType=DATE}
+            </if>
+            <if test="operatorId != null and operatorId != '' ">
+                and OPERATOR_ID = #{operatorId,jdbcType=VARCHAR}
+            </if>
+            <if test="remark != null and remark != '' ">
+                and REMARK = #{remark,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAll" resultType="com.ly.cloud.backup.vo.ApplicationServiceVo">
+        select
+        <include refid="Base_Column_List"/>
+        from ly_rm_application_service
+        <where>
+            <if test="id != null and id != '' ">
+                and ID = #{id,jdbcType=BIGINT}
+            </if>
+            <if test="applicationId != null and applicationId != '' ">
+                and APPLICATION_ID = #{applicationId,jdbcType=BIGINT}
+            </if>
+            <if test="serviceId != null and serviceId != '' ">
+                and SERVICE_ID = #{serviceId,jdbcType=BIGINT}
+            </if>
+            <if test="deploymentWay != null and deploymentWay != '' ">
+                and DEPLOYMENT_WAY = #{deploymentWay,jdbcType=VARCHAR}
+            </if>
+            <if test="affiliatedCompany != null and affiliatedCompany != '' ">
+                and AFFILIATED_COMPANY = #{affiliatedCompany,jdbcType=VARCHAR}
+            </if>
+            <if test="operationTime != null and operationTime != '' ">
+                and OPERATION_TIME = #{operationTime,jdbcType=DATE}
+            </if>
+            <if test="operatorId != null and operatorId != '' ">
+                and OPERATOR_ID = #{operatorId,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAllService" resultType="java.lang.String">
+        select
+        SERVICE_ID
+        from ly_rm_application_service
+        where
+            APPLICATION_ID = #{id,jdbcType=BIGINT}
+        order by
+            SERVICE_ID
+    </select>
+
+    <select id="selectAllApplication" resultType="java.lang.String">
+        select
+            APPLICATION_ID
+        from ly_rm_application_service
+        where
+            SERVICE_ID = #{id,jdbcType=BIGINT}
+        order by
+            APPLICATION_ID
+    </select>
+
+    <select id="selectServiceInfo" resultType="com.ly.cloud.backup.vo.ApplicationServiceVo" parameterType="long">
+        select
+            appSer.id AS id,
+            ser.id AS serviceId,
+		    ser.english_name AS englishName,
+		    ser.chinese_name AS chineseName,
+		    ser.health_status AS healthStatus
+        from ly_rm_application_service appSer
+        left join ly_rm_service ser on ser.id=appSer.service_id
+        where
+            appSer.application_id = #{id,jdbcType=BIGINT}
+        order by
+            ser.id desc,
+            ser.english_name desc
+    </select>
+
+    <select id="countErrorServiceByAppId" resultType="integer" parameterType="string">
+        select count(*) from ly_rm_service
+        where health_status = 0
+          and id in (select service_id from ly_rm_application_service where application_id = #{applicationId,jdbcType=VARCHAR})
+    </select>
+    <select id="countServiceByAppId" resultType="integer"  parameterType="string">
+        select count(*) from ly_rm_service service
+        inner join ly_rm_application_service app_service on service.id = app_service.service_id
+        where  app_service.application_id = #{applicationId,jdbcType=VARCHAR}
+        <if test="healthStatus != null and healthStatus != ''">
+            and service.health_status = #{healthStatus,jdbcType=BIGINT}
+        </if>
+    </select>
+
+    <select id="countServiceGroupByAppId" resultType="map" parameterType="string">
+        select app_service.application_id as "key",count(*) as "value"
+        from ly_rm_service service
+        inner join ly_rm_application_service app_service on service.id = app_service.service_id
+        <where>
+            <if test="healthStatus != null and healthStatus != ''">
+                and service.health_status = #{healthStatus,jdbcType=BIGINT}
+            </if>
+        </where>
+        group by app_service.application_id
+    </select>
+
+
+
+    <select id="selectServices" resultType="com.ly.cloud.backup.vo.ApplicationServiceVo" parameterType="long">
+        select
+            appSer.id AS id,
+            ser.id AS serviceId,
+            ser.english_name AS englishName,
+            ser.chinese_name AS chineseName,
+            ser.health_status AS healthStatus
+        from ly_rm_application_service appSer
+                 inner join ly_rm_service ser on ser.id=appSer.service_id
+        where
+            appSer.application_id = #{id,jdbcType=BIGINT}
+        order by
+            ser.id desc,
+            ser.english_name desc
+    </select>
+
+
+</mapper>

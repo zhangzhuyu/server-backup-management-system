@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.SystemSetupMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.SystemSetupPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="title" property="title" jdbcType="VARCHAR" />
+        <result column="whether_text" property="whetherText" jdbcType="VARCHAR" />
+        <result column="systray" property="systray" jdbcType="CLOB" />
+        <result column="set_key" property="setKey" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+<!--    也可以对Base_Column_List下面的字段起别名，使实体类属性与数据库字段一致-->
+    <sql id="Base_Column_List">
+		id,
+		title,
+		whether_text,
+		systray,
+		set_key,
+		operator_id,
+		operation_time,
+		remark
+    </sql>
+
+    <!--更新systray的值-->
+    <update id="updateSystray"  >
+        update ly_sm_system_setup
+        <set>
+            <if test="systemSetupPo.id != null and systemSetupPo.id != '' ">
+                id=#{systemSetupPo.id,jdbcType=BIGINT},
+            </if>
+            <if test="systemSetupPo.title != null and systemSetupPo.title != '' ">
+                title=#{systemSetupPo.title,jdbcType=VARCHAR},
+            </if>
+            <if test="systemSetupPo.whetherText != null and systemSetupPo.whetherText != '' ">
+                whether_text=#{systemSetupPo.whetherText,jdbcType=VARCHAR},
+            </if>
+            <if test="systemSetupPo.systray != null and systemSetupPo.systray != '' ">
+                systray=#{systemSetupPo.systray,jdbcType=VARCHAR},
+            </if>
+            <if test="systemSetupPo.setKey != null and systemSetupPo.setKey != '' ">
+                set_key=#{systemSetupPo.setKey,jdbcType=VARCHAR},
+            </if>
+            <if test="systemSetupPo.operatorId != null and systemSetupPo.operatorId != '' ">
+                operator_id=#{systemSetupPo.operatorId,jdbcType=VARCHAR},
+            </if>
+            <if test="systemSetupPo.operationTime != null and systemSetupPo.operationTime != '' ">
+                operation_time=#{systemSetupPo.operationTime,jdbcType=DATE},
+            </if>
+            <if test="systemSetupPo.remark != null and systemSetupPo.remark != '' ">
+                remark=#{systemSetupPo.remark,jdbcType=VARCHAR}
+            </if>
+        </set>
+        where id=#{systemSetupPo.id,jdbcType=BIGINT}
+    </update>
+
+    <resultMap id="SystemSetupMap"
+               type="com.ly.cloud.backup.vo.SystemSetupVo" extends="BaseResultMap">
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="getDataById" resultMap="SystemSetupMap"
+          parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sm_system_setup
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+<!-- 查询 -->
+    <select id="select" resultMap="SystemSetupMap"
+        parameterType="com.ly.cloud.backup.dto.SystemSetupDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sm_system_setup
+        <where>
+        <if test="dto.searchParam != null and dto.searchParam != '' ">
+                and ( SET_KEY like concat('%',#{dto.searchParam,jdbcType=VARCHAR},'%') or REMARK like concat('%',#{dto.searchParam,jdbcType=VARCHAR},'%') )
+        </if>
+        <if test="dto.id != null and dto.id != '' ">
+                id=#{dto.id,jdbcType=BIGINT},
+        </if>
+        <if test="dto.title != null and dto.title != '' ">
+                title=#{dto.title,jdbcType=VARCHAR},
+        </if>
+        <if test="dto.whetherText != null and dto.whetherText != '' ">
+                whether_text=#{dto.whetherText,jdbcType=VARCHAR},
+        </if>
+        <if test="dto.systray != null and dto.systray != '' ">
+                systray=#{dto.systray,jdbcType=VARCHAR},
+        </if>
+        <if test="dto.setKey != null and dto.setKey != '' ">
+                set_key=#{dto.setKey,jdbcType=VARCHAR},
+        </if>
+        <if test="dto.operatorId != null and dto.operatorId != '' ">
+                operator_id=#{dto.operatorId,jdbcType=VARCHAR},
+        </if>
+        <if test="dto.operationTime != null and dto.operationTime != '' ">
+                operation_time=#{dto.operationTime,jdbcType=DATE},
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+                remark=#{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+
+</mapper>

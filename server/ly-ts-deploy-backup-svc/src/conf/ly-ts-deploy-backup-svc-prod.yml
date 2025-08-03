@@ -1,0 +1,263 @@
+server:
+  port: 50016
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    context-path: /api/ts-dc-backup
+spring:
+  profiles:
+    active:
+      - ${profileName:dev}
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1000MB
+  ######################################mysql基础数据库-需要修改链接 start################################################
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    #    driver-class-name: com.mysql.cj.jdbc.Driver
+    #测试环境
+    #    url: jdbc:mysql://192.168.35.145:3307/ly_dc3?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    #    url: jdbc:mysql://192.168.34.136:3306/ly_dc5?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    #开发环境
+    url: jdbc:mysql://192.168.35.202:3306/ly_dc?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    #url: jdbc:mysql://localhost:3306/ly_dc?useSSL=false&serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    #    username: ly_dc
+    password: Ly37621040
+    #password: mysql
+    #    password: ly_dc
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      pool-prepared-statements: false
+      max-pool-prepared-statement-per-connection-size: 20
+      max-open-prepared-statements: 20
+      validation-query: SELECT 'x' from dual
+      validation-query-timeout: 30000
+      test-on-borrow: false
+      test-on-return: false
+      test-while-idle: true
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      max-evictable-idle-time-millis: 300000
+      filters: stat,wall,log4j
+      filter:
+        wall:
+          enabled: true
+          config:
+            comment-allow: true
+            multi-statement-allow: true
+      web-stat-filter:
+        enabled: true  #是否启用StatFilter默认值true
+        url-pattern: /druid/*
+        #        exclusions: *.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*
+        session-stat-enable: true
+        session-stat-max-count: 10
+        principal-session-name:
+        principal-cookie-name:
+        profile-enable: true
+      stat-view-servlet:
+        enabled: true #是否启用StatViewServlet默认值true
+        url-pattern: /druid/*
+        reset-enable: true
+        login-username: admin
+        login-password: Ly37621040
+        allow:
+        deny:
+  ######################################mysql基础数据库-需要修改链接 end################################################
+  ##########################################redis-需要修改链接 start ##############################################
+  redis:
+    database: 1           # Redis数据库索引（默认为0）
+    #    开发环境
+    host: 192.168.35.202   # Redis服务器地址
+    #host: 192.168.35.210   # Redis服务器地址
+    #    测试环境
+    #    host: 192.168.34.136   # Redis服务器地址
+    #    host: 192.168.35.145   # Redis服务器地址
+    port: 16377            # Redis服务器连接端口
+    password: 37621040     #Redis服务器连接密码（默认为空）
+    timeout: 0            # 连接超时时间（毫秒）
+    jedis:
+      pool:
+        max-idle: 8         # 连接池中的最大空闲连接
+        min-idle: 1         # 连接池中的最小空闲连接
+        max-active: 8       # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+  ##########################################redis-需要修改链接 end ##############################################
+  ##########################################rabbitmq-需要修改链接 start ##############################################
+  rabbitmq:
+    host: 192.168.35.210
+    port: 5672
+    username: admin
+    password: 37621040
+  ##########################################rabbitmq-需要修改链接 end ##############################################
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
+    clean-on-validation-error: true
+    validate-on-migrate: false
+    #    目标版本
+    target:
+    encoding: UTF-8
+    #     迁移sql脚本文件存放路径，默认db/migration
+    locations: classpath:db/migration
+    #     迁移sql脚本文件名称的前缀，默认V
+    sql-migration-prefix: V
+    #     迁移sql脚本文件名称的分隔符，默认2个下划线__
+    sql-migration-separator: __
+    #     迁移sql脚本文件名称的后缀
+    sql-migration-suffixes: .sql
+  #########################################quartz-不需要修改(与基础库一样) start ##############################################
+  quartz:
+    properties:
+      org:
+        quartz:
+          #quartz数据库连接(与基础库一样)
+          dataSource:
+            qzDS:
+              URL: ${spring.datasource.url}
+              driver: ${spring.datasource.driver-class-name}
+              maxConnections: 10
+              password: ${spring.datasource.password}
+              user: ${spring.datasource.username}
+          # quartzjob存储方式
+          jobStore:
+            #jdbc持久化
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            #数据源连接名
+            dataSource: qzDS
+            #驱动代表
+            driverDelegateClass:  org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            #触发器忍耐时间 超过5s则错过
+            misfireThreshold: 5000
+            #表前缀
+            tablePrefix: LY_QRTZ_
+            useProperties: false
+          scheduler:
+            instanceName: ly_ts_scheduler_backup
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            makeThreadsDaemons: true
+            threadCount: 10
+            threadPriority: 5
+            threadsInheritContextClassLoaderOfInitializingThread: true
+##########################################quartz-不需要修改链接(与基础库一样) end ##############################################
+##########################################liboffice-需要修改链接start ##############################################
+openoffice:
+  host: 192.168.35.210
+  port: 8100
+##########################################openoffice-需要修改链接end ##############################################
+##########################################elasticsearch-需要修改链接start ##############################################
+elasticsearch:
+  #测试环境
+  #  host: 192.168.34.136
+  #  host: 192.168.35.145
+  #开发环境
+  host: 192.168.35.202
+  port: 9200
+  username: elastic
+  #  password: changeme
+  password: Ly37621040
+  # threadpool:
+  # index:
+  #  type: cached
+#    type: fixed
+#    size: 100
+#    queue_size: 500
+##########################################elasticsearch-需要修改链接start ##############################################
+
+##挂载文件路径
+fileClientPath: C:\data\dc
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*Mapper.xml
+  typeAliasesPackage: com.ly.cloud.**.po
+  global-config:
+    #驼峰下划线转换
+    db-config:
+      id-type: ID_WORKER
+    banner: false
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+feign:
+  hystrix:
+    enabled: true
+#队列名称
+queueName: queue_1
+#邮件发送参数
+mail:
+  smtp:
+    host: smtp.qq.com
+    port: 465
+    auth: true
+    ssl:
+      enable: true
+  debug: true
+  transport:
+    protocol: smtp
+  #邮件发送者账号
+  formMailUser: lydsc@ly-sky.com
+  #smtp客户端密码
+  smtpPassword: hgvwdtehgwfzbaij
+  #邮件发送者密码
+  formMailPassword: TXQIYXlianyi123
+auth:
+  captchaOnOff: false
+  captchaType: char
+  token:
+    # 令牌自定义标识
+    header: Authorization
+    # 令牌密钥
+    secret: abcdefghijklmnopqrstuvwxyz
+    # 令牌有效期（默认30分钟）
+    expireTime: 30
+swagger:
+  # 是否开启swagger
+  enabled: true
+#联奕运维机器人
+ding:
+  #开发者后台->应用开发-企业内部应用->选择您的机器人->应用凭证->AppKey
+  app-key: dingpmhdlmis9n1eudpq
+  #开发者后台->应用开发-企业内部应用->选择您的机器人->应用凭证->AppSecret
+  app-secret: W3N8pOHvwcdC6NBtKUs00dQEJFumaijLFDBysiAQoEJ76d7VCz_XGWZvxIEWSp9p
+  #群聊->机器人头像->机器人设置（有权限，不一定都能看到）->Webhook
+  webhook: https://oapi.dingtalk.com/robot/send?access_token=5e5b46416e86a36c3c82ec21ead12df820273316f332aa366928044d29d23ed4
+#License相关配置
+license:
+  #平台版本号
+  subject: ly-ts-deploy-2.0
+  #私钥别称
+  privateAlias: privateKey
+  #私钥密码
+  keyPass: private_Ly37621040
+  #访问公钥库的密码
+  storePass: public_Ly37621040
+  #证书生成路径
+  licensePath: C:/client/license/license.lic
+  #私钥库存储路径
+  publicKeysStorePath: C:\client\license\publicCerts.keystore
+  #公钥钥库存储路径
+  privateKeysStorePath: C:/client/license/privateKeys.keystore
+  #公钥别称
+  publicAlias: publicCert
+  #用户类型
+  consumerType: User
+  #用户数量
+  consumerAmount: 1
+
+# MinIO 配置
+minio:
+  url: http://101.35.199.23:9000 # Minio服务地址 登录账户：admin 登录密码：admin123456
+  bucket-name: maintenance-report # 默认存储通名称
+  access-key: admin1 # 账号
+  secret-key: admin123    # 密码
+  imgSize: 1024   # 图片大小限制，单位：M
+  fileSize: 1024  # 文件大小限制，单位：M
+
+

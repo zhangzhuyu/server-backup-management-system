@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.RecoveryStrategyMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.RecoveryStrategyPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="recovery_type" property="recovery_type" jdbcType="VARCHAR" />
+        <result column="recovery_object" property="recovery_object" jdbcType="VARCHAR" />
+        <result column="recovery_condition" property="recovery_condition" jdbcType="VARCHAR" />
+        <result column="whether_enable" property="whether_enable" jdbcType="VARCHAR" />
+        <result column="recovery_count" property="recovery_count" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operator_id" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operation_time" jdbcType="DATE" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		recovery_type,
+		recovery_object,
+		recovery_condition,
+		whether_enable,
+		recovery_count,
+		operator_id,
+		operation_time,
+		remark
+    </sql>
+    
+    <resultMap id="RecoveryStrategyMap"
+               type="com.ly.cloud.backup.vo.RecoveryStrategyVo" extends="BaseResultMap">
+        
+    </resultMap>
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="RecoveryStrategyMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_fr_recovery_strategy
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="RecoveryStrategyMap"
+        parameterType="com.ly.cloud.backup.dto.RecoveryStrategyDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_fr_recovery_strategy
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.name != null and dto.name != '' ">
+          and  NAME = #{dto.name,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.recovery_type != null and dto.recovery_type != '' ">
+          and  RECOVERY_TYPE = #{dto.recovery_type,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.recovery_object != null and dto.recovery_object != '' ">
+          and  RECOVERY_OBJECT = #{dto.recovery_object,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.recovery_condition != null and dto.recovery_condition != '' ">
+          and  RECOVERY_CONDITION = #{dto.recovery_condition,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.whether_enable != null and dto.whether_enable != '' ">
+          and  WHETHER_ENABLE = #{dto.whether_enable,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.recovery_count != null and dto.recovery_count != '' ">
+          and  RECOVERY_COUNT = #{dto.recovery_count,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operator_id != null and dto.operator_id != '' ">
+          and  OPERATOR_ID = #{dto.operator_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operation_time != null and dto.operation_time != '' ">
+          and  OPERATION_TIME = #{dto.operation_time,jdbcType=DATE}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.AdapterMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.AdapterPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="resource_name" property="resourceName" jdbcType="VARCHAR" />
+        <result column="resource_verson" property="resourceVerson" jdbcType="VARCHAR" />
+        <result column="compatible_verson" property="compatibleVerson" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="operator_id" property="operatorId" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		resource_name,
+		resource_verson,
+		compatible_verson,
+		operation_time,
+		operator_id,
+		remark
+    </sql>
+    
+    <resultMap id="AdapterMap"
+               type="com.ly.cloud.backup.vo.AdapterVo" extends="BaseResultMap">
+        
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="getDataById" resultMap="AdapterMap"
+        parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_adapter
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+    <!-- 查询 -->
+    <select id="select" resultMap="AdapterMap"
+        parameterType="com.ly.cloud.backup.dto.AdapterDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_adapter
+        <where>
+        <if test="dto.id != null and dto.id != '' ">
+          and  ID = #{dto.id,jdbcType=BIGINT}
+        </if>
+        <if test="dto.name != null and dto.name != '' ">
+          and  NAME = #{dto.name,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.resource_name != null and dto.resource_name != '' ">
+          and  RESOURCE_NAME = #{dto.resource_name,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.resource_verson != null and dto.resource_verson != '' ">
+          and  RESOURCE_VERSON = #{dto.resource_verson,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.compatible_verson != null and dto.compatible_verson != '' ">
+          and  COMPATIBLE_VERSON = #{dto.compatible_verson,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.operation_time != null and dto.operation_time != '' ">
+          and  OPERATION_TIME = #{dto.operation_time,jdbcType=DATE}
+        </if>
+        <if test="dto.operator_id != null and dto.operator_id != '' ">
+          and  OPERATOR_ID = #{dto.operator_id,jdbcType=VARCHAR}
+        </if>
+        <if test="dto.remark != null and dto.remark != '' ">
+          and  REMARK = #{dto.remark,jdbcType=VARCHAR}
+        </if>
+        </where>
+    </select>
+
+</mapper>

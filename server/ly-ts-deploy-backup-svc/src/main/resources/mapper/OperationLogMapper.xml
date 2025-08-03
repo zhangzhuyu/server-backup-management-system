@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.OperationLogMapper">
+
+    <resultMap id="BaseResultMap"
+        type="com.ly.cloud.backup.po.OperationLogPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="function_moudul" property="functionMoudule" jdbcType="VARCHAR" />
+        <result column="sub_functionmdl" property="subFunctionmdl" jdbcType="VARCHAR" />
+        <result column="visit_url" property="visitUrl" jdbcType="VARCHAR" />
+        <result column="request_method" property="requestMethod" jdbcType="VARCHAR" />
+        <result column="method_parameter" property="methodParameter" jdbcType="VARCHAR" />
+        <result column="operation_detail" property="operationDetail" jdbcType="VARCHAR" />
+        <result column="operation_time" property="operationTime" jdbcType="DATE" />
+        <result column="login_logid" property="loginLogid" jdbcType="BIGINT" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		function_moudule,
+		sub_functionmdl,
+		visit_url,
+		request_method,
+        method_parameter,
+        operation_detail,
+        operation_time,
+        login_logid
+    </sql>
+    
+    <resultMap id="OperationLogMap"
+               type="com.ly.cloud.backup.vo.OperationLogVo" extends="BaseResultMap">
+        
+    </resultMap>
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="OperationLogMap"
+        parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sm_operation_log
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    
+<!--    &lt;!&ndash; 查询 &ndash;&gt;-->
+<!--    <select id="select" resultMap="OperationLogMap"-->
+<!--        parameterType="com.ly.cloud.backup.dto.OperationLogDto">-->
+<!--        select-->
+<!--        <include refid="Base_Column_List" />-->
+<!--        from ly_sm_operation_log-->
+<!--        <where>-->
+<!--        <if test="dto.id != null and dto.id != '' ">-->
+<!--          and  ID = #{dto.id,jdbcType=BIGINT}-->
+<!--        </if>-->
+<!--        <if test="dto.function_moudul != null and dto.function_moudul != '' ">-->
+<!--          and  function_moudul = #{dto.function_moudul,jdbcType=VARCHAR}-->
+<!--        </if>-->
+<!--        <if test="dto.sub_functionmdl != null and dto.sub_functionmdl != '' ">-->
+<!--          and  sub_functionmdl = #{dto.sub_functionmdl,jdbcType=VARCHAR}-->
+<!--        </if>-->
+<!--        <if test="dto.visit_url != null and dto.visit_url != '' ">-->
+<!--          and  visit_url = #{dto.visit_url,jdbcType=VARCHAR}-->
+<!--        </if>-->
+<!--        <if test="dto.request_method != null and dto.request_method != '' ">-->
+<!--          and  request_method = #{dto.request_method,jdbcType=VARCHAR}-->
+<!--        </if>-->
+
+<!--        <if test="dto.method_parameter != null and dto.method_parameter != '' ">-->
+<!--                and  method_parameter = #{dto.method_parameter,jdbcType=VARCHAR}-->
+<!--        </if>-->
+<!--        <if test="dto.operation_detail != null and dto.operation_detail != '' ">-->
+<!--                and  operation_detail = #{dto.operation_detail,jdbcType=VARCHAR}-->
+<!--        </if>-->
+<!--        <if test="dto.operation_time != null and dto.operation_time != '' ">-->
+<!--                and  operation_time = #{dto.operation_time,jdbcType=DATE}-->
+<!--        </if>-->
+<!--        <if test="dto.login_logid != null and dto.login_logid != '' ">-->
+<!--                and  login_logid = #{dto.login_logid,jdbcType=BIGINT}-->
+<!--        </if>-->
+
+
+<!--        </where>-->
+<!--    </select>-->
+
+</mapper>

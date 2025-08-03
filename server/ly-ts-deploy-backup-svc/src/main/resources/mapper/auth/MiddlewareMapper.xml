@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.auth.mapper.SystemRoleMenuMapper">
+    <resultMap id="BaseResultMap"
+               type="com.ly.cloud.auth.po.SystemRoleMenuPo">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="role_id" property="roleId" jdbcType="BIGINT" />
+        <result column="menu_id" property="menuId" jdbcType="BIGINT" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+		id,
+		role_id,
+		menu_id
+    </sql>
+
+    <resultMap id="SystemRoleMenuMap"
+               type="com.ly.cloud.auth.vo.SystemRoleMenuVo" extends="BaseResultMap">
+
+    </resultMap>
+
+
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="SystemRoleMenuMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_role_menu
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="SystemRoleMenuMap"
+            parameterType="com.ly.cloud.auth.dto.SystemRoleMenuDto">
+        select
+        <include refid="Base_Column_List" />
+        from ly_sys_role_menu
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  id = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.roleId != null and dto.roleId != '' ">
+                and  role_id = #{dto.roleId,jdbcType=BIGINT}
+            </if>
+            <if test="dto.menuId != null and dto.menuId != '' ">
+                and  menu_id = #{dto.menuId,jdbcType=BIGINT}
+            </if>
+<!--            <if test="dto.menuName != null and dto.menuName != '' ">-->
+<!--                and  menu_name like concat('%', #{dto.menuName,jdbcType=VARCHAR}, '%')-->
+<!--            </if>-->
+        </where>
+        order by
+        id desc
+    </select>
+
+    <select id="selectMenuIdById" resultType="java.lang.String">
+        select
+            menu_id
+        from ly_sys_role_menu
+        <where>
+            <if test="id != null and id != '' ">
+                and  role_id = #{id,jdbcType=BIGINT}
+            </if>
+        </where>
+        order by
+            id desc
+    </select>
+
+    <select id="queryMenusByRoleId" resultType="com.ly.cloud.auth.vo.SystemMenuVo"
+            parameterType="java.lang.Long">
+        select
+            menu.menu_id,
+            menu.menu_name
+        from ly_sys_role_menu rm left join ly_sys_menu menu on rm.menu_id = menu.menu_id
+        <where>
+            <if test="id != null and id != '' ">
+                and  rm.role_id = #{id,jdbcType=BIGINT}
+            </if>
+        </where>
+        order by
+        menu.menu_id desc
+    </select>
+</mapper>

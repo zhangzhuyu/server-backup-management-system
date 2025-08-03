@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+    namespace="com.ly.cloud.backup.mapper.PerformanceMonitorMapper">
+
+    <resultMap id="treeResultMap" type="com.ly.cloud.backup.vo.PerformanceMonitorNapeVo">
+        <id column="id" property="id"/>
+        <result column="nape_type" property="napeType"/>
+        <result column="nape_name" property="napeName"/>
+        <result column="parent_nape_type" property="parentNapeType"/>
+        <result column="leaf_node" property="leafNode"/>
+        <collection property="children" ofType="com.ly.cloud.backup.vo.PerformanceMonitorNapeVo"
+                    column="{nape_type=nape_type}" select="findCategoriesByParentNapeType"/>
+    </resultMap>
+
+    <resultMap id="listMap" type="com.ly.cloud.backup.vo.PerformanceMonitorVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="enable" property="enable"/>
+        <result column="operating_cycle" property="operatingCycle"/>
+        <result column="run_time" property="runTime"/>
+        <result column="nape_type" property="napeType"/>
+        <result column="target_sourceId" property="targetSource"/>
+        <result column="operation_date" property="operationDate"/>
+        <result column="strategic_modeId" property="strategicModeId"/>
+    </resultMap>
+
+    <sql id="treeSql">
+        select
+            lxmn.id,
+            lxmn.nape_type,
+            lxmn.nape_name,
+            lxmn.parent_nape_type,
+            lxmn.leaf_node
+        from ly_xn_monitoring_nape lxmn
+    </sql>
+
+    <select id="getPerformanceHardwareList" resultMap="treeResultMap">
+        <include refid="treeSql"/>
+        <where>
+            lxmn.parent_nape_type = -1
+        </where>
+    </select>
+
+    <select id="findCategoriesByParentNapeType" resultMap="treeResultMap">
+        <include refid="treeSql"/>
+        <where>
+            lxmn.parent_nape_type = #{nape_type}
+        </where>
+    </select>
+
+
+    <select id="getTargetSourceServerList" resultType="com.ly.cloud.backup.vo.PerformanceMonitorTargetSourceServerVo">
+        select
+            id id,
+            ip ip,
+            realm_name realmName,
+            disc disc
+        from ly_xn_monitoring_target_source_server where ip = '-1'
+    </select>
+
+    <select id="getTargetSourceDataBaseList" resultType="com.ly.cloud.backup.vo.PerformanceMonitorTargetSourceDatabaseVo">
+        select
+            lrd.id dataBaseId,
+            lrd.source_type dataBaseType,
+            lrd.url dataBaseUrl
+        from ly_rm_database lrd
+    </select>
+
+    <select id="getTargetSourceMiddlewareList" resultType="com.ly.cloud.backup.vo.PerformanceMonitorTargetSourceMiddlewareVo">
+        select
+            lrm.id middlewareId,
+            lrm.middleware_type middlewareType,
+            lrm.url middlewareUrl
+        from ly_rm_middleware lrm
+    </select>
+
+    <select id="getTargetSourceApplicationList" resultType="com.ly.cloud.backup.vo.PerformanceMonitorTargetSourceApplicationVo">
+        select
+            lra.id applicationId,
+            lra.url applicationUrl
+        from ly_rm_application lra
+    </select>
+
+
+    <select id="list" resultMap="listMap" >
+        select
+            lxm.id,
+            lxm.name,
+            lxm.nape_type,
+            lxm.enable,
+            lxm.operating_cycle,
+            lxm.run_time,
+            lxm.target_sourceId,
+            lxm.operation_date,
+            lxm.strategic_modeId
+        from ly_xn_monitoring lxm
+        <where>
+            <if test="dto.searchKey != null and dto.searchKey != ''">
+                and lxm.name like concat('%',#{dto.searchKey},'%')
+            </if>
+            <if test="dto.enable != null and dto.enable != ''">
+                and lxm.enable = #{dto.enable}
+            </if>
+        </where>
+    </select>
+
+    <select id="getNapeTypeList" resultType="com.ly.cloud.backup.vo.PerformanceMonitorNapeVo">
+        <include refid="treeSql"/>
+    </select>
+
+    <select id="findTargetSourceList" resultType="com.ly.cloud.backup.vo.PerformanceMonitorTargetSourceServerVo">
+           select
+            id id,
+            ip ip,
+            realm_name realmName,
+            disc disc,
+            server_id serverId
+        from ly_xn_monitoring_target_source
+    </select>
+
+    <delete id="deleteTargetSourceByIdBatch">
+        delete from ly_xn_monitoring_target_source
+        <where>
+            <if test="list != null and list.size() > 0">
+                id in
+                <foreach collection="list" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <select id="findStrategicModeList" resultType="com.ly.cloud.backup.vo.StrategicModeVo">
+        select
+            lxsm.id value,
+            lxsm.name label
+        from ly_xn_strategic_mode lxsm
+    </select>
+
+    <update id="updatStart">
+        update ly_xn_monitoring set enable = case when enable = '0' then 1 else 0 end where id = #{id}
+    </update>
+
+    <select id="selectByName" resultType="com.ly.cloud.backup.po.PerformanceMonitorPo">
+        select * from ly_xn_monitoring where name = #{name}
+    </select>
+
+</mapper>

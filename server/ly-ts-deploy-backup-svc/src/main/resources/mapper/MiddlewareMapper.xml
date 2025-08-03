@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.MiddlewareMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ly.cloud.backup.po.MiddlewarePo">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="middleware_type" property="middlewareType" />
+        <result column="port" property="port" />
+        <result column="ip" property="ip" />
+        <result column="database_name" property="databaseName" />
+        <result column="user" property="user" />
+        <result column="password" property="password" />
+        <result column="url" property="url" />
+        <result column="affiliated_company" property="affiliatedCompany" />
+        <result column="whether_monitoring" property="whetherMonitoring" />
+        <result column="test_status" property="testStatus" />
+        <result column="version" property="version" />
+        <result column="work_directory" property="workDirectory" />
+        <result column="operation_time" property="operationTime" />
+        <result column="operator_id" property="operatorId" />
+        <result column="remark" property="remark" />
+        <result column="health_status" property="healthStatus" />
+        <result column="serial_number" property="serialNumber" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+		id,
+		name,
+		middleware_type,
+		port,
+		ip,
+		database_name,
+		user,
+		password,
+		url,
+		affiliated_company,
+		whether_monitoring,
+		test_status,
+		version,
+		work_directory,
+		operation_time,
+		operator_id,
+		remark,
+		health_status,
+		serial_number
+    </sql>
+
+    <resultMap id="MiddlewareMap"
+               type="com.ly.cloud.backup.vo.MiddlewareVo" extends="BaseResultMap">
+
+    </resultMap>
+
+    <!-- 按主键查询 -->
+    <select id="selectById" resultMap="MiddlewareMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from ly_rm_middleware
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <!-- 查询 -->
+    <select id="select" resultMap="MiddlewareMap"
+            parameterType="com.ly.cloud.backup.dto.MiddlewareDto">
+        select
+            middleware.*
+        from ly_rm_middleware middleware
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  middleware.id = #{dto.id,jdbcType=BIGINT}
+            </if>
+            <if test="dto.middlewareType != null and dto.middlewareType != '' ">
+                and  middleware.middleware_type = #{dto.middlewareType,jdbcType=BIGINT}
+            </if>
+            <if test="dto.name != null and dto.name != '' ">
+                and  middleware.name like concat('%', #{dto.name,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.affiliatedCompany != null and dto.affiliatedCompany != '' ">
+                and  middleware.affiliated_company = #{dto.affiliatedCompany,jdbcType=BIGINT}
+            </if>
+        </where>
+        order by
+            middleware.serial_number,
+            middleware.name desc,
+            middleware.id asc
+    </select>
+
+
+
+</mapper>

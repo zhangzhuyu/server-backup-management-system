@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ly.cloud.backup.mapper.WarningRuleMapper">
+
+    <!--  批量新增集合  -->
+    <insert id="insertPoBatchObject" parameterType="java.util.List">
+        insert into ly_mw_warning_rule_object(
+        id,
+        rule_id,
+        warning_object,
+        operator_id,
+        operation_time,
+        remark
+        )
+        values
+
+        <foreach collection="list" item="row" index="index" separator=",">
+            (
+            #{row.id, jdbcType=BIGINT},
+            #{row.ruleId, jdbcType=VARCHAR},
+            #{row.warningObject, jdbcType=VARCHAR},
+            #{row.operatorId, jdbcType=VARCHAR},
+            #{row.operationTime, jdbcType=DATE},
+            #{row.remark, jdbcType=VARCHAR}
+            )
+        </foreach>
+    </insert>
+
+
+    <!-- 单个更新或全部启用规则数据 -->
+    <update id="enable">
+        update ly_mw_warning_rule
+        set enable = #{status}
+        <if test="id != null and id != ''">
+            where id = #{id}
+        </if>
+    </update>
+
+    <update id="enableRuleAndTaskById">
+    update ly_mw_warning_rule r inner join LY_QRTZ_TRIGGERS t on r.id = t.TRIGGER_NAME
+    set r.enable = #{status} , t.TRIGGER_STATE = #{param}
+    where id = #{id}
+    </update>
+
+    <!--  条件查询告警规则信息  -->
+    <select id="list" resultType="com.ly.cloud.backup.vo.WarningRuleListVo">
+        select rule.id,
+        rule.target,
+        target.target_name typeName,
+        rule.type,
+        rule.name,
+        rule.threshold_operators1,
+        rule.threshold1,
+        rule.threshold_unit1,
+        rule.running_time,
+        rule.running_time_unit,
+        rule.repeat_operators,
+        rule.repeat_value,
+        rule.warning_level,
+        rule.warning_object,
+        rule.param0,
+        rule.enable,
+        rule.gap_value,
+        rule.gap_value_unit,
+        rule.enable_work_order,
+        rule.delay,
+        rule.delay_unit,
+        rule.delay_operators,
+        rule.throughput,
+        rule.throughput_unit,
+        rule.throughput_operators,
+        rule.delay_throughput_relator,
+        rule.push_mode,
+        rule.interval_value,
+        rule.interval_unit,
+        rule.weekday,
+        rule.start_date,
+        rule.end_date,
+        rule.start_time,
+        rule.end_time,
+        target.operator_type operatorType
+        from ly_mw_warning_rule rule
+        left join ly_mw_warning_target target
+        on rule.type = target.id
+        <where>
+            <if test="dto.id != null and dto.id != '' ">
+                and  rule.id = #{dto.id,jdbcType=INTEGER}
+            </if>
+            <if test="dto.targetList != null and dto.targetList.size() > 0 ">
+                and  rule.target in
+                <foreach collection="dto.targetList" open="(" separator="," item="target" close=")">
+                    #{target}
+                </foreach>
+            </if>
+            <if test="dto.warningLevelList != null and dto.warningLevelList.size() > 0 ">
+                and  rule.warning_level in
+                <foreach collection="dto.warningLevelList" open="(" separator="," item="warning_level" close=")">
+                    #{warning_level}
+                </foreach>
+            </if>
+            <if test="dto.content != null and dto.content != '' ">
+                and  ( target.target_name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%')
+                or  rule.name like concat('%', #{dto.content,jdbcType=VARCHAR}, '%') )
+            </if>
+        </where>
+        order by rule.operation_time desc
+    </select>
+
+    <select id="getWarningObject" resultType="com.ly.cloud.backup.po.WarningObjectPo">
+        select id, rule_id,warning_object from  ly_mw_warning_rule_object
+        <where>
+            <if test="ruleId != null and ruleId != '' ">
+                rule_id = #{ruleId}
+            </if>
+        </where>
+
+    </select>
+
+    <select id="getIdList" resultType="java.lang.String">
+        select id from ly_mw_warning_rule
+    </select>
+    <!--  单个查询告警规则信息  -->
+    <select id="get" resultType="com.ly.cloud.backup.vo.WarningRuleListVo">
+        select
+           rule.id,
+            rule.target,
+            rule.type,
+            rule.name,
+            rule.threshold_operators1 ,
+            rule.threshold1,
+            rule.threshold_unit1,
+            rule.running_time,
+            rule.running_time_unit,
+            rule.repeat_operators,
+            rule.repeat_value,
+            rule.warning_level,
+            rule.warning_object,
+            rule.enable,
+            rule.gap_value,
+            rule.gap_value_unit,
+            rule.enable_work_order,
+            rule.remark,
+            rule.delay,
+            rule.delay_unit,
+            rule.delay_operators,
+            rule.throughput,
+            rule.throughput_unit,
+            rule.throughput_operators,
+            rule.delay_throughput_relator,
+            rule.push_mode,
+            rule.interval_value,
+            rule.interval_unit,
+            rule.weekday,
+            rule.start_date,
+            rule.end_date,
+            rule.start_time,
+            rule.end_time,
+            rule.delay_operators
+        from ly_mw_warning_rule rule
+        where rule.id = #{id}
+    </select>
+
+    <!--  查询所有主机资源  -->
+    <select id="getAllServer" resultType="com.ly.cloud.backup.vo.SelectVo">
+        select
+        id value, name label, '1' parentValue
+        from ly_rm_server
+        where id is not null
+        order by operation_time desc
+    </select>
+
+    <!--  查询所有数据库资源  -->
+    <select id="getAllDatabase" resultType="com.ly.cloud.backup.vo.SelectVo">
+        select
+        id value, name label, '2' parentValue
+        from ly_rm_database
+        where id is not null
+        order by operation_time desc
+    </select>
+
+    <!--  查询所有服务资源  -->
+    <select id="getAllService" resultType="com.ly.cloud.backup.vo.SelectVo">
+        select
+        id value, english_name label, '3' parentValue
+        from ly_rm_service
+        where id is not null
+        order by operation_time desc
+    </select>
+
+    <!--  查询所有中间件资源  -->
+    <select id="getAllMiddleware" resultType="com.ly.cloud.backup.vo.SelectVo">
+        select
+        id value, name label, '5' parentValue
+        from ly_rm_middleware
+        where id is not null
+        order by operation_time desc
+    </select>
+
+    <!--  查询告警目标信息 -->
+    <select id="getWarningObjectList" resultType="java.lang.String">
+        select
+        warning_object from ly_mw_warning_rule_object
+        where rule_id = #{id}
+        order by operation_time desc
+    </select>
+
+    <!--  查询指标下拉框 -->
+    <select id="getAllTarget" resultType="com.ly.cloud.backup.vo.TargetSelectVo">
+        select
+        target_name label, id value, target_type parentValue, operator_type type from ly_mw_warning_target
+        where enable = 1
+        order by operation_time desc
+    </select>
+
+    <!--  查询指标列表 -->
+    <select id="getTargetList" resultType="com.ly.cloud.backup.vo.TargetVo">
+        select
+        id,target_type,target_name,operator_type,sql_line from ly_mw_warning_target
+        where id is not null
+        order by operation_time desc
+    </select>
+
+    <!--  通过id查sql -->
+    <select id="getSqlLineById" resultType="java.lang.String">
+        select
+        sql_line from ly_mw_warning_target
+        where id = #{id}
+        order by operation_time desc
+    </select>
+
+    <!--  通过id查指标名字 -->
+    <select id="getTargetNameById" resultType="java.lang.String">
+        select
+        target_name from ly_mw_warning_target
+        where id = #{id}
+        order by operation_time desc
+    </select>
+
+    <delete id="deleteRecordById" >
+        delete  from ly_mw_warning_record  where rule_id = #{ruleId}
+    </delete>
+
+    <delete id="deleteWorkOrderById">
+        delete a from  ly_mw_work_order a left join ly_mw_warning_record b on b.id=a.record_id
+        where b.rule_id = #{ruleId}
+    </delete>
+
+    <delete id="deleteRecordObjectById">
+        delete a from  ly_mw_warning_record_object a left join ly_mw_warning_record b on b.id=a.record_id
+        where b.rule_id = #{ruleId}
+    </delete>
+
+    <delete id="deleteWarningObjectById">
+        delete  from  ly_mw_warning_rule_object where rule_id = #{ruleId}
+    </delete>
+    <select id="selectLevelTotal" resultType="com.ly.cloud.backup.vo.LevelRuleNumerVo">
+        select warning_level,count(*) num from ly_mw_warning_rule group by warning_level
+    </select>
+    <select id="selectRuleIdByResourcesObject" resultType="string">
+        select DISTINCT rule_id ruleId from ly_mw_warning_rule_object where warning_object = #{warningObject}
+    </select>
+
+    <select id="selectDisableRuleId" resultType="string">
+        select rule_id from ly_mw_warning_rule_object
+        <if test="list != null and list.size() > 0">
+            <where>
+                rule_id in
+                <foreach collection="list" item="ruleId" open="(" separator="," close=")">
+                    #{ruleId}
+                </foreach>
+            </where>
+            group by rule_id having COUNT(*) =1
+        </if>
+    </select>
+
+    <update id="updateDisableByRuleIds">
+        <if test="list != null and list.size() > 0">
+            update ly_mw_warning_rule set enable = '0' where id in
+            <foreach collection="list" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </update>
+
+    <delete id="deleteWarningObjectByObjectId">
+        delete from ly_mw_warning_rule_object where warning_object = #{objectId}
+    </delete>
+
+    <select id="getHostWarningTotal" resultType="com.ly.cloud.backup.vo.WarningSubMethodVo">
+        select lmwr.warning_level levelId,count(*) num from ly_rm_server lrs
+        inner join ly_mw_warning_record_object lmwro on lrs.id = lmwro.warning_object and lrs.ipv4 = #{ip}
+        inner join ly_mw_warning_record lmwr on lmwro.record_id = lmwr.id where date_format(lmwr.warning_time, '%Y-%m-%d %H:%i:%s') >= str_to_date(#{startTime},'%Y-%m-%d %H:%i:%s') and date_format(lmwr.warning_time, '%Y-%m-%d %H:%i:%s') &lt;= str_to_date(#{endTime},'%Y-%m-%d %H:%i:%s') group by lmwr.warning_level
+    </select>
+
+    <select id="getOrcalWarningTotal" resultType="com.ly.cloud.backup.vo.OrcalTotalVo">
+        select count(*) recordTotal from ly_rm_database lrd
+        inner join ly_mw_warning_record_object lmwro on lrd.id = lmwro.warning_object and lrd.ipv4 = #{ip} and lrd.port = #{port}
+        inner join ly_mw_warning_record lmwr on lmwro.record_id = lmwr.id and lmwr.identification = 'i' where date_format(lmwr.warning_time, '%Y-%m-%d %H:%i:%s') >= str_to_date(#{startTime},'%Y-%m-%d %H:%i:%s') and date_format(lmwr.warning_time, '%Y-%m-%d %H:%i:%s') &lt;= str_to_date(#{endTime},'%Y-%m-%d %H:%i:%s')
+        union all
+        select count(distinct lmwr.id) ruleTotal from ly_mw_warning_rule lmwr
+        inner join ly_mw_warning_rule_object lmwro on lmwr.id = lmwro.rule_id and lmwr.target = 2 and lmwr.identification = 'i'
+        inner join ly_rm_database lrd on lrd.id = lmwro.warning_object or lmwro.warning_object = -1
+        where lrd.ipv4 = #{ip} and lrd.port = #{port}
+    </select>
+
+    <select id="getResourcesTotal" resultType="com.ly.cloud.backup.vo.OrcalTotalVo">
+        <!--主机规则数-->
+        select "1" as resourcesType, count(DISTINCT lmwr.id) ruleTotal, 0 as recordTotal from ly_rm_server lrs inner join ly_mw_warning_rule_object lmwro on lrs.id = lmwro.warning_object or lmwro.warning_object = -1 inner join ly_mw_warning_rule lmwr on lmwr.id = lmwro.rule_id and lmwr.target = '1' and lmwr.identification = 'i'
+        <!--数据库规则数-->
+        union all
+        select CONCAT('2-', lrd.source_type) resourcesType,count(DISTINCT lmwr.id) ruleTotal,0 as recordTotal from ly_rm_database lrd
+        left join ly_mw_warning_rule_object lmwro on lrd.id = lmwro.warning_object or lmwro.warning_object = -1
+        left join ly_mw_warning_rule lmwr on lmwr.id = lmwro.rule_id and lmwr.target = '2' and lmwr.identification = 'i' GROUP by lrd.source_type
+        <!--中间件规则数-->
+        union all
+        select CONCAT('5-', lrm.middleware_type),count(DISTINCT lmwr.id) ruleTotal,0 as recordTotal from ly_rm_middleware lrm
+        left join ly_mw_warning_rule_object lmwro on lrm.id = lmwro.warning_object or lmwro.warning_object = '-1'
+        left join ly_mw_warning_rule lmwr on lmwr.id = lmwro.rule_id and lmwr.target = '5' and lmwr.identification = 'i' GROUP by lrm.middleware_type
+        <!--nginx规则数-->
+        union all
+        select "6" as resourcesType, count(DISTINCT lmwr.id) ruleTotal,0 as recordTotal from ly_rm_nginx lrn
+        inner join ly_mw_warning_rule_object lmwro on lrn.id = lmwro.warning_object or lmwro.warning_object = -1
+        inner join ly_mw_warning_rule lmwr on lmwr.id = lmwro.rule_id and lmwr.target = '6' and lmwr.identification = 'i'
+        <!--主机记录数-->
+        union all
+        select "1" as resourcesType, 0 as ruleTotal, count(DISTINCT lmwr.id) from ly_rm_server lrs
+        inner join ly_mw_warning_record_object lmwro on lrs.id = lmwro.warning_object
+        inner join ly_mw_warning_record lmwr on lmwro.record_id = lmwr.id and lmwr.identification = 'i'
+        <!--数据库记录数-->
+        union all
+        select CONCAT('2-', lrd.source_type) as resourcesType, 0 as ruleTotal, count(DISTINCT lmwr.id) recordTotal from ly_rm_database lrd
+        left join ly_mw_warning_record_object lmwro on lrd.id = lmwro.warning_object
+        left join ly_mw_warning_record lmwr on lmwro.record_id = lmwr.id and lmwr.identification = 'i' GROUP by lrd.source_type
+        <!--中间件记录数-->
+        union all
+        select  CONCAT('5-', lrm.middleware_type) as resourcesType, 0 as ruleTotal, count(DISTINCT lmwr.id) recordTotal from ly_rm_middleware lrm
+        left join ly_mw_warning_record_object lmwro on lrm.id = lmwro.warning_object
+        left join ly_mw_warning_record lmwr on lmwro.record_id = lmwr.id and lmwr.identification = 'i' GROUP by lrm.middleware_type
+        <!--nginx记录数-->
+        union all
+        select "6" as resourcesType, 0 as ruleTotal, count(DISTINCT lmwr.id) recordTotal from ly_rm_nginx lrn
+        inner join ly_mw_warning_record_object lmwro on lrn.id = lmwro.warning_object
+        inner join ly_mw_warning_record lmwr on lmwro.record_id = lmwr.id and lmwr.identification = 'i'
+    </select>
+
+</mapper>

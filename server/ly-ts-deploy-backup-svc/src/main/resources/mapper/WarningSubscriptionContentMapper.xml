@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ly.cloud.backup.mapper.WarningSubscriptionContentMapper">
+
+    <resultMap type="com.ly.cloud.backup.po.WarningSubscriptionContentPo" id="WarningSubscriptionContentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="subscriptionId" column="subscription_id" jdbcType="VARCHAR"/>
+        <result property="subscribeType" column="subscribe_type" jdbcType="VARCHAR"/>
+        <result property="subscribeContent" column="subscribe_content" jdbcType="VARCHAR"/>
+        <result property="operatorId" column="operator_id" jdbcType="VARCHAR"/>
+        <result property="operationTime" column="operation_time" jdbcType="TIMESTAMP"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="WarningSubscriptionContentMap">
+        select
+          id, subscription_id, subscribe_type, subscribe_content, operator_id, operation_time, remark
+        from ly_mw_warning_subscription_content
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="WarningSubscriptionContentMap">
+        select
+        id, subscription_id, subscribe_type, subscribe_content, operator_id, operation_time, remark
+        from ly_mw_warning_subscription_content
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="subscriptionId != null and subscriptionId != ''">
+                and subscription_id = #{subscriptionId}
+            </if>
+            <if test="subscribeType != null and subscribeType != ''">
+                and subscribe_type = #{subscribeType}
+            </if>
+            <if test="subscribeContent != null and subscribeContent != ''">
+                and subscribe_content = #{subscribeContent}
+            </if>
+            <if test="operatorId != null and operatorId != ''">
+                and operator_id = #{operatorId}
+            </if>
+            <if test="operationTime != null">
+                and operation_time = #{operationTime}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from ly_mw_warning_subscription_content
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="subscriptionId != null and subscriptionId != ''">
+                and subscription_id = #{subscriptionId}
+            </if>
+            <if test="subscribeType != null and subscribeType != ''">
+                and subscribe_type = #{subscribeType}
+            </if>
+            <if test="subscribeContent != null and subscribeContent != ''">
+                and subscribe_content = #{subscribeContent}
+            </if>
+            <if test="operatorId != null and operatorId != ''">
+                and operator_id = #{operatorId}
+            </if>
+            <if test="operationTime != null">
+                and operation_time = #{operationTime}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into ly_mw_warning_subscription_content(subscription_id, subscribe_type, subscribe_content, operator_id, operation_time, remark)
+        values (#{subscriptionId}, #{subscribeType}, #{subscribeContent}, #{operatorId}, #{operationTime}, #{remark})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into ly_mw_warning_subscription_content(subscription_id, subscribe_type, subscribe_content, operator_id,
+        operation_time, remark)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.subscriptionId}, #{entity.subscribeType}, #{entity.subscribeContent}, #{entity.operatorId},
+            #{entity.operationTime}, #{entity.remark})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into ly_mw_warning_subscription_content(subscription_id, subscribe_type, subscribe_content, operator_id,
+        operation_time, remark)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.subscriptionId}, #{entity.subscribeType}, #{entity.subscribeContent}, #{entity.operatorId},
+            #{entity.operationTime}, #{entity.remark})
+        </foreach>
+        on duplicate key update
+        subscription_id = values(subscription_id),
+        subscribe_type = values(subscribe_type),
+        subscribe_content = values(subscribe_content),
+        operator_id = values(operator_id),
+        operation_time = values(operation_time),
+        remark = values(remark)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update ly_mw_warning_subscription_content
+        <set>
+            <if test="subscriptionId != null and subscriptionId != ''">
+                subscription_id = #{subscriptionId},
+            </if>
+            <if test="subscribeType != null and subscribeType != ''">
+                subscribe_type = #{subscribeType},
+            </if>
+            <if test="subscribeContent != null and subscribeContent != ''">
+                subscribe_content = #{subscribeContent},
+            </if>
+            <if test="operatorId != null and operatorId != ''">
+                operator_id = #{operatorId},
+            </if>
+            <if test="operationTime != null">
+                operation_time = #{operationTime},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from ly_mw_warning_subscription_content where id = #{id}
+    </delete>
+
+</mapper>
+
